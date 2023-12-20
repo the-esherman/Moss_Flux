@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+
+# Raw data
+Data_raw/*
+
+# Clean data
+Data_clean/*
+
+# Images and exported data
+images/*
+export/*
