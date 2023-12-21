@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Project I - Moss C-flux
+# Project II - Moss C-flux
 
 ### Part of PhD studies of Emil A.S. Andersen
 
