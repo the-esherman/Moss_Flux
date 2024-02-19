@@ -13,3 +13,6 @@ Data_clean/*
 # Images and exported data
 images/*
 export/*
+
+# Removed code. Should not be committed
+R_code/Removed_cleaning_loggers.R
