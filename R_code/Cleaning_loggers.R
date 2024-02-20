@@ -44,9 +44,7 @@ for (file in airT_folder){
 airT_all <- do.call(rbind, airT_list)
 #
 # Combine with 
-airT_all.2 <- bind_rows(airT_all, AirT_20200901, AirT_20200902)
-
-
+AirT_flux <- bind_rows(airT_all, AirT_20200901, AirT_20200902)
 #
 # Clean files by isolating mean temperature from unit and splitting date and time
 AirT_flux <- AirT_flux %>%
@@ -103,7 +101,7 @@ PAR_Field_M_20211104_09 <- read_xls("Data_raw/Loggers/PAR flux/[Field M 20211104
 PAR_Myran_20210604_06 <- read_xls("Data_raw/Loggers/PAR flux/[Myran 20210604-06]EM14946 6jun21-1803.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
 #
 # 5TM also set, but not used, only PAR on port 4 and 5!
-PAR_Myran_202103_04 <- read_xls("Data_raw/Loggers/PAR flux/[Myran 202103-04]EM14943 7apr21-1217.xls", skip = 3, col_names = c("Date_time", "X1", "X1_2", "X2", "X2_2", "X3", "X3_1", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+PAR_Myran_202103_04 <- read_xls("Data_raw/Loggers/PAR flux/Odd format/[Myran 202103-04]EM14943 7apr21-1217.xls", skip = 3, col_names = c("Date_time", "X1", "X1_2", "X2", "X2_2", "X3", "X3_1", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
 #
 # Combine all PAR files
 PAR_flux <- bind_rows(list(PAR_20210603, PAR_20210702_03, PAR_20210704, PAR_20210705_07, PAR_20210705_07.2, PAR_Field_20210322, PAR_Field_20210323, PAR_Field_20210324, PAR_Field_20210325, PAR_Field_20210326, PAR_FIeld_20210419, PAR_Field_20210420, PAR_Field_20210422, PAR_Field_20210423, PAR_Field_20210426_27, PAR_Field_20210428_29, PAR_Field_20210430, PAR_Field_20210507, PAR_Field_20210510, PAR_Field_20210601_02, PAR_Field_20210927_28, PAR_Field_H_20210827_30, PAR_Field_H_20210929_30, PAR_Field_H_20211103_09, PAR_Field_M_20210827_30, PAR_Field_M_20210929_30, PAR_Field_M_20211104_09, PAR_Myran_202103_04, PAR_Myran_20210604_06), .id = "id")
