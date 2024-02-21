@@ -102,6 +102,93 @@ Flux_data.1 <- Flux_data %>%
          "Resp" = D) %>%
   mutate(GPP = Resp - NEE)
 #
+# Negative values make no sense. 
+Flux_data.2 <- Flux_data.1 %>%
+  mutate(GPP = if_else(GPP <= 0, 0, GPP),
+         MP = case_when(Round == 1 ~ "September_2020",
+                        Round == 2 ~ "October_2020",
+                        Round == 3 ~ "November_2020",
+                        Round == 4 ~ "February",
+                        Round == 5 ~ "March",
+                        Round == 6 ~ "May",
+                        Round == 7 ~ "June",
+                        Round == 8 ~ "July",
+                        Round == 9 ~ "September",
+                        Round == 10 ~ "October",
+                        Round == 11 ~ "November")) %>%
+  relocate(MP, .after = Round)
+#
+# Boxplot
+Flux_data.2 %>%
+  mutate(MP = fct_inorder(MP)) %>%
+  ggplot(aes(x = MP, y = GPP)) + geom_boxplot() + facet_wrap(~Species, scales = "free")
+#
+# Histogram
+Flux_data.2 %>%
+  ggplot(aes(x = GPP)) + geom_histogram() + facet_wrap(~Species)
+
+
+# Next: 
+# Combine with environmental data?
+# 
+
+#
+#
+#
+#=======  §§  Statistics    §§ =======
+#-------  »   Q1            « -------
+# 
+#
+Q1_flux <- Flux_data.2 %>%
+  mutate(across(Round, ~as.character(.x))) %>%
+  mutate(across(c(Block, Species, Round), ~as.factor(.x)))
+#
+# Transform data
+Q1_flux <- Q1_flux %>%
+  select(1:4, GPP) %>%
+  mutate(logGPP = log(GPP+1),
+         sqrtGPP = sqrt(GPP),
+         cubeGPP = GPP^(1/9),
+         sqEt_prod = GPP^2,
+         ashinGPP = log(GPP + sqrt(GPP^2 + 1)), # inverse hyperbolic sine transformation
+         arcGPP = asin(sqrt(((GPP)/10000))))
+#
+lme1 <- lme(logGPP ~ Round*Species,
+            random = ~1|Block/Species,
+            data = Q1_flux, na.action = na.exclude, method = "REML")
+#
+# Using lme4 package:
+# lmer(logEt_prod ~ Round*Species + (1 | Block/Species), data = Q1_ARA, na.action = na.exclude)
+#
+# Checking assumptions:
+par(mfrow = c(1,2))
+plot(fitted(lme1), resid(lme1), 
+     xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
+qqnorm(resid(lme1), main = "Normally distributed?")                 
+qqline(resid(lme1), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1)
+par(mfrow = c(1,1))
+#
+# model output
+Anova(lme1, type=2)
+#
+#
+#
+#
+#
+#=======  ♫♫  Graphs        ♫♫ =======
+#-------  ♪   Environmental ♪ -------
+
+
+#
+#
+#
+#-------  ♪   Flux          ♪ -------
+
+#
+#
+#
+#-------  ♪   Outliers      ♪ -------
 # Check for negative values
 # Per Block
 Flux_data_GPP_block <- Flux_data.1 %>%
@@ -134,52 +221,6 @@ plot_ly(Flux_data_GPP_species, x = ~Au, y = ~Round, name = "Aulacomnium turgidum
   add_trace(x = ~Sli, y = ~Round, name = "Sphagnum lindbergii",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
   layout(title = "Photosynthesis per species", xaxis = list(title = "GPP (µmol)"), margin = list(l = 100))
 #
-# Negative values make no sense. 
-Flux_data.2 <- Flux_data.1 %>%
-  mutate(GPP = if_else(GPP <= 0, 0, GPP),
-         MP = case_when(Round == 1 ~ "September_2020",
-                        Round == 2 ~ "October_2020",
-                        Round == 3 ~ "November_2020",
-                        Round == 4 ~ "February",
-                        Round == 5 ~ "March",
-                        Round == 6 ~ "May",
-                        Round == 7 ~ "June",
-                        Round == 8 ~ "July",
-                        Round == 9 ~ "September",
-                        Round == 10 ~ "October",
-                        Round == 11 ~ "November")) 
-Flux_data.2 %>%
-  mutate(MP = fct_inorder(MP)) %>%
-  
-  ggplot(aes(x = MP, y = GPP)) + geom_boxplot() + facet_wrap(~Species, scales = "free")
-
-
-# Next: 
-# Combine with environmental data?
-# 
-
-#
-#
-#
-#=======  §§  Statistics    §§ =======
-#-------  »   Q1            « -------
-
-#
-#
-#
-#=======  ♫♫  Graphs        ♫♫ =======
-#-------  ♪   Environmental ♪ -------
-
-
-#
-#
-#
-#-------  ♪   Flux          ♪ -------
-
-#
-#
-#
-#-------  ♪   Outliers      ♪ -------
 
 #
 #
