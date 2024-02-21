@@ -110,7 +110,8 @@ flux_time.2 <- flux_time %>%
   mutate(Early = hms::as_hms(min(Time)),
          Late = hms::as_hms(max(Time))) %>%
   distinct(Date, Early, Late)
-  
+
+write_csv(flux_time.2, "Data_clean/Flux_time.csv", na = "NA")
 
 #
 #
