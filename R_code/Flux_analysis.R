@@ -25,8 +25,12 @@ Run9 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE,
 Run10 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE, sheet = "Run 10")
 Run11 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE, sheet = "Run 11")
 #
-
-
+# Environmental data
+# Air temperature at flux measurements
+AirT_flux <- read_csv("Data_clean/AirT_flux.csv", col_names = TRUE)
+#
+# PAR at measurement
+PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
 
 #
 #
@@ -118,6 +122,10 @@ Flux_data.2 <- Flux_data.1 %>%
                         Round == 11 ~ "November")) %>%
   relocate(MP, .after = Round)
 #
+
+
+
+#
 # Boxplot
 Flux_data.2 %>%
   mutate(MP = fct_inorder(MP)) %>%
@@ -128,9 +136,13 @@ Flux_data.2 %>%
   ggplot(aes(x = GPP)) + geom_histogram() + facet_wrap(~Species)
 
 
-# Next: 
-# Combine with environmental data?
 # 
+# Next:
+# Combine with environmental data? - Need time-points or the given average time
+# Statistics
+Flux_data_export <- Flux_data.2 %>%
+  select(Round, Block, Species, NEE, Resp, GPP)
+write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 
 #
 #
@@ -145,11 +157,11 @@ Q1_flux <- Flux_data.2 %>%
 #
 # Transform data
 Q1_flux <- Q1_flux %>%
-  select(1:4, GPP) %>%
+  select(Round, Block, Species, GPP) %>%
   mutate(logGPP = log(GPP+1),
          sqrtGPP = sqrt(GPP),
          cubeGPP = GPP^(1/9),
-         sqEt_prod = GPP^2,
+         sqGPP = GPP^2,
          ashinGPP = log(GPP + sqrt(GPP^2 + 1)), # inverse hyperbolic sine transformation
          arcGPP = asin(sqrt(((GPP)/10000))))
 #
