@@ -2,6 +2,7 @@
 # By Emil A.S. Andersen
 # 
 #=======  ♣   Libraries     ♣ =======
+library(plotly)
 library(tidyverse)
 library(readxl)
 library(lubridate)
