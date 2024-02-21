@@ -26,6 +26,10 @@ Run9 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE,
 Run10 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE, sheet = "Run 10")
 Run11 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE, sheet = "Run 11")
 #
+# Time interval
+Time_flux <- read_csv("Data_clean/Flux_time.csv", col_names = TRUE)
+#
+#
 # Environmental data
 # Air temperature at flux measurements
 AirT_flux <- read_csv("Data_clean/AirT_flux.csv", col_names = TRUE)
@@ -123,24 +127,26 @@ Flux_data.2 <- Flux_data.1 %>%
                         Round == 11 ~ "November")) %>%
   relocate(MP, .after = Round)
 #
-
-
-
 #
-# Boxplot
-Flux_data.2 %>%
-  mutate(MP = fct_inorder(MP)) %>%
-  ggplot(aes(x = MP, y = GPP)) + geom_boxplot() + facet_wrap(~Species, scales = "free")
-#
-# Histogram
-Flux_data.2 %>%
-  ggplot(aes(x = GPP)) + geom_histogram() + facet_wrap(~Species)
+# Environment
+
+
+
 
 
 # 
 # Next:
 # Combine with environmental data? - Need time-points or the given average time
 # Statistics
+
+
+
+
+
+
+
+
+# Save flux data to share.
 Flux_data_export <- Flux_data.2 %>%
   select(Round, Block, Species, NEE, Resp, GPP)
 write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
@@ -202,6 +208,17 @@ Anova(lme1, type=2)
 #
 #
 #-------  ♪   Outliers      ♪ -------
+# Check flux data structure
+#
+# Boxplot
+Flux_data.2 %>%
+  mutate(MP = fct_inorder(MP)) %>%
+  ggplot(aes(x = MP, y = GPP)) + geom_boxplot() + facet_wrap(~Species, scales = "free")
+#
+# Histogram
+Flux_data.2 %>%
+  ggplot(aes(x = GPP)) + geom_histogram() + facet_wrap(~Species)
+#
 # Check for negative values
 # Per Block
 Flux_data_GPP_block <- Flux_data.1 %>%
