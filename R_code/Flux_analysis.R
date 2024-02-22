@@ -235,7 +235,7 @@ Flux_data.3 <- Flux_data.2 %>%
 
 # Save flux data to share.
 Flux_data_export <- Flux_data.3 %>%
-  select(Round, Block, Species, NEE, Resp, GPP)
+  select(!MP)
 write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 
 #
@@ -360,6 +360,21 @@ PAR_flux %>%
   filter(Habitat == "M") %>%
   distinct(Date)
 
+
+Flux_data.3 %>%
+  ggplot(aes(x = AirT, y = AirT_flux)) + geom_point()
+Flux_data.3 %>%
+  ggplot(aes(x = PAR, y = PAR_flux)) + geom_point()
+
+Flux_data.3 %>%
+  select(Date, Block, Species, AirT, AirT_flux) %>%
+  pivot_longer(cols = c(AirT, AirT_flux), names_to = "Sensor", values_to = "AirT") %>%
+  ggplot(aes(x = Date, y = AirT, shape = Sensor, color = Block)) + geom_point()
+
+Flux_data.3 %>%
+  select(Date, Block, Species, PAR, PAR_flux) %>%
+  pivot_longer(cols = c(PAR, PAR_flux), names_to = "Sensor", values_to = "PAR") %>%
+  ggplot(aes(x = Date, y = PAR, shape = Sensor, color = Block)) + geom_point()
 
 
 #
