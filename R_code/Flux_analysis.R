@@ -214,7 +214,9 @@ Environ.2 <- Environ  %>%
 #
 # Average over each day
 Environ.3 <- Environ.2 %>%
-  summarise(AirT = mean(AirT, na.rm = T),
+  summarise(SoilT = mean(Soil_temperature, na.rm = T),
+            SoilM = mean(Soil_moisture, na.rm = T),
+            AirT = mean(AirT, na.rm = T),
             PAR = mean(PAR, na.rm = T),
             .by = Date) %>%
   # PAR logger only seems to have been placed on the 23rd of September 2020 (2020-09-23)
@@ -251,7 +253,7 @@ Q1_flux <- Flux_data.3 %>%
 #
 # Transform data
 Q1_flux <- Q1_flux %>%
-  select(Round, Block, Species, GPP) %>%
+  select(Round, Block, Species, GPP, AirT, PAR, SoilT, SoilM) %>%
   mutate(logGPP = log(GPP+1),
          sqrtGPP = sqrt(GPP),
          cubeGPP = GPP^(1/9),
@@ -399,6 +401,23 @@ x <- left_join(Environ, Environ_flux, by = join_by(Date, Time, Early, Late))
 xx <- x %>%
   mutate(diff = if_else(is.na(AirT_flux), 0, AirT - AirT_flux)) %>%
   ggplot(aes(x = Date, y = diff)) + geom_point()
+
+
+
+
+
+
+
+
+
+Flux_data.3 %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = GPP, color = Species), shape = 1) 
+
+Flux_data.3 %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = SoilM, color = Species), shape = 1) 
+
 
 
 #
