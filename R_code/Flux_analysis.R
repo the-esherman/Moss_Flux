@@ -33,10 +33,15 @@ Time_flux <- read_csv("Data_clean/Flux_time.csv", col_names = TRUE)
 # Environmental data
 # Air temperature at flux measurements
 AirT_flux <- read_csv("Data_clean/AirT_flux.csv", col_names = TRUE)
+# Air temperature in Wetland habitat
+AirT_wetland <- read_csv("Data_clean/AirT_wetland.csv", col_names = TRUE)
 #
 # PAR at measurement
 PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
-
+#
+# EM50 logger data (Soil temperature and moisture and PAR)
+# Cleaned from the N2-fixation script
+EM50_Heath <- read_csv("Data_clean/Heath_EM50_simple.csv", col_names = TRUE)
 #
 #
 #
@@ -128,26 +133,108 @@ Flux_data.2 <- Flux_data.1 %>%
   relocate(MP, .after = Round)
 #
 #
-# Environment
-
-
-
+#
+# Environmental ----
+# PAR measurements at flux measuring time have both heath and mire later. Combine to get only one value per time
+# Isolate where both sites was measured by one
+PAR_flux.both <- PAR_flux %>%
+  filter(Habitat == "Both") %>%
+  select(Date, Time, PAR)
+#
+# Average heath and mire PAR measurements
+PAR_flux.combi <- PAR_flux %>%
+  filter(Habitat != "Both") %>%
+  summarise(PAR = mean(PAR, na.rm = TRUE), .by = c(Date, Time))
+#
+# Combine
+PAR_flux.2 <- bind_rows(PAR_flux.both, PAR_flux.combi)
+#
+# Simplify Air temperature
+AirT_flux.2 <- AirT_flux %>%
+  select(Date, Time, AirT)
+#
+# Combine Air temperature and PAR values
+Environ_flux <- full_join(AirT_flux.2, PAR_flux.2, by = join_by(Date, Time)) %>%
+  left_join(Time_flux, by = join_by(Date))
+#
+# Keep only time interval where measurements were taken
+Environ_flux.2 <- Environ_flux %>%
+  # Introduce DST, as it was used in the field measurements
+  # The fine-details of exactly hour when it shifts does not matter, as no measurements were done from 2-3 am when the time shifts
+  mutate(Time = case_when(Date < ymd("20201025") ~ Time+hms::hms(3600),
+                          Date == ymd("20201025") & Time < hms::hms(3*3600) ~ Time+hms::hms(3600),
+                          Date > ymd("20210328") & Date < ymd("20211031") ~ Time+hms::hms(3600),
+                          Date > ymd("20220327") ~ Time+hms::hms(3600),
+                          TRUE ~ Time)) %>%
+  group_by(Date) %>%
+  mutate(Remov = case_when(Time >= Early & Time <= Late ~ "No",
+                           TRUE ~ "Yes")) %>%
+  ungroup() %>%
+  filter(Remov == "No") %>%
+  select(!Remov)
+#
+# Average over each day
+Environ_flux.3 <- Environ_flux.2 %>%
+  summarise(AirT = mean(AirT, na.rm = T),
+            PAR = mean(PAR, na.rm = T),
+            .by = Date) %>%
+  rename("AirT_flux" = AirT,
+         "PAR_flux" = PAR) %>%
+  mutate(PAR_flux = if_else(is.nan(PAR_flux), NA, PAR_flux))
+  
+#
+# AirT from wetland habitat
+AirT_wetland <- AirT_wetland %>%
+  select(Date, Time, AirT_C) %>%
+  rename("AirT" = AirT_C)
+#
+# EM50 logger from heath
+EM50_Heath <- EM50_Heath %>%
+  rename("Time" = Tid)
+#
+# Combine loggers from site
+Environ <- full_join(EM50_Heath, AirT_wetland, by = join_by(Date, Time)) %>%
+  left_join(Time_flux, by = join_by(Date))
+#
+# Keep only time interval where measurements were taken
+Environ.2 <- Environ  %>%
+  # Introduce DST, as it was used in the field measurements
+  # The fine-details of exactly hour when it shifts does not matter, as no measurements were done from 2-3 am when the time shifts
+  mutate(Time = case_when(Date < ymd("20201025") ~ Time+hms::hms(3600),
+                          Date == ymd("20201025") & Time < hms::hms(3*3600) ~ Time+hms::hms(3600),
+                          Date > ymd("20210328") & Date < ymd("20211031") ~ Time+hms::hms(3600),
+                          Date > ymd("20220327") ~ Time+hms::hms(3600),
+                          TRUE ~ Time)) %>%
+  group_by(Date) %>%
+  mutate(Remov = case_when(Time >= Early & Time <= Late ~ "No",
+                           TRUE ~ "Yes")) %>%
+  ungroup() %>%
+  filter(Remov == "No") %>%
+  select(!Remov)
+#
+# Average over each day
+Environ.3 <- Environ.2 %>%
+  summarise(AirT = mean(AirT, na.rm = T),
+            PAR = mean(PAR, na.rm = T),
+            .by = Date) %>%
+  # PAR logger only seems to have been placed on the 23rd of September 2020 (2020-09-23)
+  mutate(PAR = if_else(Date == ymd("20200901") | Date == ymd("20200902"), NA, PAR))
+#
+#
+# Combine AirT and PAR measurements with flux data
+Flux_data.3 <- Flux_data.2 %>%
+  left_join(Environ.3, by = join_by(Date)) %>%
+  left_join(Environ_flux.3, by = join_by(Date))
 
 
 # 
 # Next:
-# Combine with environmental data? - Need time-points or the given average time
 # Statistics
 
 
 
-
-
-
-
-
 # Save flux data to share.
-Flux_data_export <- Flux_data.2 %>%
+Flux_data_export <- Flux_data.3 %>%
   select(Round, Block, Species, NEE, Resp, GPP)
 write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 
@@ -251,6 +338,29 @@ plot_ly(Flux_data_GPP_species, x = ~Au, y = ~Round, name = "Aulacomnium turgidum
   add_trace(x = ~Sli, y = ~Round, name = "Sphagnum lindbergii",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
   layout(title = "Photosynthesis per species", xaxis = list(title = "GPP (µmol)"), margin = list(l = 100))
 #
+# Some environmental data checks
+
+
+PAR_flux %>%
+  unite(Date, Time, col = "Date_Time", sep = "T") %>%
+  mutate(Date_time = ymd_hms(Date_Time)) %>%
+  ggplot(aes(x = Date_time, y = PAR)) + geom_point() + facet_wrap(~Habitat)
+
+PAR_flux %>%
+  filter(Habitat != "Both") %>%
+  distinct(Date, Time)
+
+PAR_flux %>%
+  filter(Habitat == "Both") %>%
+  distinct(Date)
+PAR_flux %>%
+  filter(Habitat == "H") %>%
+  distinct(Date)
+PAR_flux %>%
+  filter(Habitat == "M") %>%
+  distinct(Date)
+
+
 
 #
 #
