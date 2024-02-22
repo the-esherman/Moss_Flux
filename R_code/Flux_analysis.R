@@ -155,7 +155,9 @@ AirT_flux.2 <- AirT_flux %>%
 #
 # Combine Air temperature and PAR values
 Environ_flux <- full_join(AirT_flux.2, PAR_flux.2, by = join_by(Date, Time)) %>%
-  left_join(Time_flux, by = join_by(Date))
+  left_join(Time_flux, by = join_by(Date)) %>%
+  rename("AirT_flux" = AirT,
+         "PAR_flux" = PAR)
 #
 # Keep only time interval where measurements were taken
 Environ_flux.2 <- Environ_flux %>%
@@ -175,11 +177,9 @@ Environ_flux.2 <- Environ_flux %>%
 #
 # Average over each day
 Environ_flux.3 <- Environ_flux.2 %>%
-  summarise(AirT = mean(AirT, na.rm = T),
-            PAR = mean(PAR, na.rm = T),
+  summarise(AirT_flux = mean(AirT_flux, na.rm = T),
+            PAR_flux = mean(PAR_flux, na.rm = T),
             .by = Date) %>%
-  rename("AirT_flux" = AirT,
-         "PAR_flux" = PAR) %>%
   mutate(PAR_flux = if_else(is.nan(PAR_flux), NA, PAR_flux))
   
 #
@@ -245,7 +245,7 @@ write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 #-------  »   Q1            « -------
 # 
 #
-Q1_flux <- Flux_data.2 %>%
+Q1_flux <- Flux_data.3 %>%
   mutate(across(Round, ~as.character(.x))) %>%
   mutate(across(c(Block, Species, Round), ~as.factor(.x)))
 #
@@ -375,6 +375,30 @@ Flux_data.3 %>%
   select(Date, Block, Species, PAR, PAR_flux) %>%
   pivot_longer(cols = c(PAR, PAR_flux), names_to = "Sensor", values_to = "PAR") %>%
   ggplot(aes(x = Date, y = PAR, shape = Sensor, color = Block)) + geom_point()
+
+y <- Flux_data.3 %>%
+  select(Date, Block, Species, AirT, AirT_flux) %>%
+  mutate(Air_Temp = AirT - AirT_flux) %>%
+  ggplot(aes(x = Date, y = Air_Temp, color = Block)) + geom_point()
+
+
+x.environ_flux <- Environ_flux %>%
+  mutate(Time2 = hour(Time)) %>%
+  mutate(Time2 = hms::as_hms(Time2*60*60)) %>%
+  group_by(Date, Time2) %>%
+  summarise(AirT_flux = mean(AirT_flux, na.rm = T),
+            PAR_flux = mean(PAR_flux, na.rm = T)) %>%
+  ungroup() %>%
+  rename("Time" = Time2)
+
+
+
+x <- left_join(Environ, Environ_flux, by = join_by(Date, Time, Early, Late))
+
+
+xx <- x %>%
+  mutate(diff = if_else(is.na(AirT_flux), 0, AirT - AirT_flux)) %>%
+  ggplot(aes(x = Date, y = diff)) + geom_point()
 
 
 #
