@@ -64,6 +64,15 @@ AirT_flux.2 <- AirT_flux %>%
 length(AirT_flux.2$Day_ID) == length(AirT_flux$Date)
 # Equal length, thus all temperature datapoints are from a unique timepoint.
 #
+# Remove last couple of data points from each file, as they were logging inside! - NOT DONE
+
+AirT_flux %>%
+  unite(Date, Time, col = "Date_time", sep = "T") %>%
+  mutate(Date_time = ymd_hms(Date_t))
+  ggplot(aes(x = Date, y = AirT)) + geom_point()
+
+
+#
 # Save to csv
 write_csv(AirT_flux, "Data_clean/AirT_flux.csv", na = "NA")
 #
