@@ -1,5 +1,7 @@
-# Analysis - moss flux
-# By Emil A.S. Andersen
+# Bryophyte experiment - CO2 flux
+# Script author: Emil A.S. Andersen
+#
+# Analysis - bryophyte flux
 # 
 #=======  ♣   Libraries     ♣ =======
 library(plotly)

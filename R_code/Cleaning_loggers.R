@@ -1,7 +1,7 @@
-# Cleaning TinyTag and PAR data from each measurements
+# Bryophyte experiment - CO2 flux
+# Script author: Emil A.S. Andersen
 #
-# Moss project - CO2 flux
-# By Emil A.S. Andersen
+# Cleaning TinyTag and PAR data from each measurements
 #
 #
 #=======  ♣   Libraries   ♣ =======
@@ -110,9 +110,6 @@ PAR_Myran_202103_04 <- read_xls("Data_raw/Loggers/Odd format PAR flux/[Myran 202
 #
 # Combine
 PAR_flux <- bind_rows(PAR_all, PAR_Myran_202103_04)
-
-
-
 #
 # Clean
 # Remove unused sensors ports and separate date and time

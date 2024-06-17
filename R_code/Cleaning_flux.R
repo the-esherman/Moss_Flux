@@ -1,5 +1,7 @@
+# Bryophyte experiment - CO2 flux
+# Script author: Emil A.S. Andersen
+#
 # Cleaning something from raw files
-# By Emil A.S. Andersen
 # 
 # rm(list=ls())
 #=======  ♣   Libraries     ♣ =======
