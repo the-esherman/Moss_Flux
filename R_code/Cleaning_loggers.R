@@ -53,7 +53,7 @@ AirT_flux <- AirT_flux %>%
   separate(Time, sep = ":", into = c("hour", "min", "sec")) %>%
   unite(hour, min, col = "Time", sep = ":") %>%
   #unite(Date, Time, col = "Day_ID", sep = " ") %>%
-  select(!"sec") %>%
+  select(!c("sec", "id")) %>%
   mutate(across(c(AirT), as.numeric)) # Set temperature as numeric
 #
 # How many unique timepoints are there?
@@ -65,13 +65,13 @@ length(AirT_flux.2$Day_ID) == length(AirT_flux$Date)
 # Equal length, thus all temperature datapoints are from a unique timepoint.
 #
 # Remove last couple of data points from each file, as they were logging inside! - NOT DONE
-
+# Does not matter if only used to couple measurement at specific time
+#
+# Graph data
 AirT_flux %>%
   unite(Date, Time, col = "Date_time", sep = "T") %>%
-  mutate(Date_time = ymd_hms(Date_t))
-  ggplot(aes(x = Date, y = AirT)) + geom_point()
-
-
+  mutate(Date_time = ymd_hm(Date_time)) %>%
+  ggplot(aes(x = Date_time, y = AirT)) + geom_point()
 #
 # Save to csv
 write_csv(AirT_flux, "Data_clean/AirT_flux.csv", na = "NA")
