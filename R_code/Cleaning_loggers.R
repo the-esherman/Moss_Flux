@@ -26,7 +26,7 @@ airT_list <- list()
 # Loop through each file
 for (file in airT_folder){
   
-  # Load data: all 5TM soil temperature/moisture sensors
+  # Load data: TinyTag with min and max
   airT_data <- read_csv(paste(airT_path,file, sep = ""), skip = 5, col_names = c("Record", "Date_time", "Max_Temp", "AirT", "Min_Temp"))
   
   # Add file id to new column
@@ -80,40 +80,39 @@ write_csv(AirT_flux, "Data_clean/AirT_flux.csv", na = "NA")
 #
 #=======  ☼   PAR         ☼ =======
 # Load PAR data
-PAR_20210603 <- read_xls("Data_raw/Loggers/PAR flux/[20210603]EM14943 3jun21-1824.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_20210702_03 <- read_xls("Data_raw/Loggers/PAR flux/[20210702-03]EM14946 3jul21-1749.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_20210704 <- read_xls("Data_raw/Loggers/PAR flux/[20210704]EM14946 4jul21-1457.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_20210705_07 <- read_xls("Data_raw/Loggers/PAR flux/[20210705-07]EM14943 7jul21-1657.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric")) # Wetland, based on when retrieved
-PAR_20210705_07.2 <- read_xls("Data_raw/Loggers/PAR flux/[20210705-07]EM14946 7jul21-1706.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric")) # Heath, based on when retrieved
-PAR_Field_20210322 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210322]EM14979 22mar21-2009.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210323 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210323]EM14979 23mar21-1731.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210324 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210324]EM14979 24mar21-1329.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210325 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210325]EM14979 25mar21-1830.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210326 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210326]EM14979 26mar21-1613.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_FIeld_20210419 <- read_xls("Data_raw/Loggers/PAR flux/[FIeld 20210419]EM14979 19apr21-1738.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210420 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210420]EM14979 20apr21-1718.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210422 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210422]EM14979 22apr21-1511.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210423 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210423]EM14979 23apr21-1455.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210426_27 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210426-27]EM14979 27apr21-1727.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210428_29 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210428-29]EM14979 29apr21-1305.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210430 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210430]EM14979 30apr21-1406.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210507 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210507]EM14979 7maj21-1726.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210510 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210510]EM14979 10maj21-1243.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210601_02 <- read_xls("Data_raw/Loggers/PAR flux/[Field 20210601-02]EM14979 2jun21-1739.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_20210927_28 <- read_xls("Data_raw/Loggers/PAR flux/[Field Flux 20210927-28]EM14943 28sep21-1707.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_H_20210827_30 <- read_xls("Data_raw/Loggers/PAR flux/[Field H 20210827-30]EM14943 30aug21-1724.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_H_20210929_30 <- read_xls("Data_raw/Loggers/PAR flux/[Field H 20210929-30]EM14946 30sep21-1504.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_H_20211103_09 <- read_xls("Data_raw/Loggers/PAR flux/[Field H 20211103-09]EM14946 9nov21-1506.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_M_20210827_30 <- read_xls("Data_raw/Loggers/PAR flux/[Field M 20210827-30]EM14946 30aug21-1732.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_M_20210929_30 <- read_xls("Data_raw/Loggers/PAR flux/[Field M 20210929-30]EM14943 30sep21-1423.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Field_M_20211104_09 <- read_xls("Data_raw/Loggers/PAR flux/[Field M 20211104-09]EM14943 9nov21-1526.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
-PAR_Myran_20210604_06 <- read_xls("Data_raw/Loggers/PAR flux/[Myran 20210604-06]EM14946 6jun21-1803.xls", skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
+# PAR with similar file structure: PAR on all 5 sensors
+PAR_path <- "Data_raw/Loggers/PAR flux/"
+PAR_folder <- dir(PAR_path)
+PAR_list <- list()
+#
+# Loop through each file
+for (file in PAR_folder){
+  # Load data: all PAR sensors
+  PAR_data <- read_xls(paste(PAR_path, file, sep = ""), skip = 3, col_names = c("Date_time", "PAR1", "PAR2", "PAR3", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric"))
+  
+  # Add file id to new column
+  PAR_data$id <- str_replace_all(str_extract(file, ".*\\.xls"), c("\\s" = "_", "\\[" = "", "\\]" = "_",  "\\-" = ".", "\\.xls" = ""))
+  
+  # Name each file uniquely, based on filename. Add to list
+  PAR_list[[str_replace_all(str_extract(file, ".*\\.xls"), c("\\s" = "_", "\\[" = "", "\\]" = "_",  "\\-" = ".", "\\.xls" = ""))]] <- PAR_data
+  
+  # Remove temp file
+  rm(PAR_data)
+}
+#
+# Combine into one file
+#airT_all_wide <- airT_list %>% reduce(full_join, by = "Date_time")
+PAR_all <- do.call(bind_rows, PAR_list)
 #
 # 5TM also set, but not used, only PAR on port 4 and 5!
-PAR_Myran_202103_04 <- read_xls("Data_raw/Loggers/PAR flux/Odd format/[Myran 202103-04]EM14943 7apr21-1217.xls", skip = 3, col_names = c("Date_time", "X1", "X1_2", "X2", "X2_2", "X3", "X3_1", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+PAR_Myran_202103_04 <- read_xls("Data_raw/Loggers/Odd format PAR flux/[Myran 202103-04]EM14943 7apr21-1217.xls", skip = 3, col_names = c("Date_time", "X1", "X1_2", "X2", "X2_2", "X3", "X3_1", "PAR4", "PAR5"), col_types = c("guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric")) %>%
+  select(Date_time, PAR4, PAR5)
 #
-# Combine all PAR files
-PAR_flux <- bind_rows(list(PAR_20210603, PAR_20210702_03, PAR_20210704, PAR_20210705_07, PAR_20210705_07.2, PAR_Field_20210322, PAR_Field_20210323, PAR_Field_20210324, PAR_Field_20210325, PAR_Field_20210326, PAR_FIeld_20210419, PAR_Field_20210420, PAR_Field_20210422, PAR_Field_20210423, PAR_Field_20210426_27, PAR_Field_20210428_29, PAR_Field_20210430, PAR_Field_20210507, PAR_Field_20210510, PAR_Field_20210601_02, PAR_Field_20210927_28, PAR_Field_H_20210827_30, PAR_Field_H_20210929_30, PAR_Field_H_20211103_09, PAR_Field_M_20210827_30, PAR_Field_M_20210929_30, PAR_Field_M_20211104_09, PAR_Myran_202103_04, PAR_Myran_20210604_06), .id = "id")
+# Combine
+PAR_flux <- bind_rows(PAR_all, PAR_Myran_202103_04)
+
+
+
 #
 # Clean
 # Remove unused sensors ports and separate date and time
