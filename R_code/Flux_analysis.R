@@ -8,6 +8,7 @@ library(readxl)
 library(lubridate)
 library(car)
 library(nlme)
+library(vegan)
 #
 #
 #
@@ -42,6 +43,9 @@ PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
 # EM50 logger data (Soil temperature and moisture and PAR)
 # Cleaned from the N2-fixation script
 EM50_Heath <- read_csv("Data_clean/Heath_EM50_simple.csv", col_names = TRUE)
+#
+# MP, or Round in months
+measuringPeriod <- c("Sept",	"Oct",	"Nov",	"Feb",	"Mar",	"May",	"Jun",	"Jul",	"Sept",	"Oct",	"Nov")
 #
 #
 #
@@ -85,6 +89,12 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
   return(datac)
 }
 #
+# Inverse hyperbolic sine function
+ihs <- function(x) {
+  y <- log(x + sqrt(x^2 + 1))
+  return(y)
+}
+#
 #
 #
 #=======  ♦   Main data     ♦ =======
@@ -114,7 +124,26 @@ Flux_data.1 <- Flux_data %>%
   pivot_wider(names_from = Light_Dark, values_from = f1_lin_umol) %>%
   rename("NEE" = L,
          "Resp" = D) %>%
+  mutate(Resp = if_else(Resp < 0, 0, Resp)) %>%
+  #mutate(diff = if_else(NEE > Resp, 1, 0)) %>%
   mutate(GPP = Resp - NEE)
+
+
+x <- Flux_data.1 %>%
+  mutate(GPP = if_else(GPP <= 0, 0, GPP),
+         GPP2 = if_else(NEE > Resp, 0, Resp - NEE)) #%>%
+  #mutate(Round = fct_inorder(as.factor(Round)))
+
+
+x %>%
+  ggplot() +
+  geom_point(aes(x = Round, y = Resp), color = "#D55E00") +
+  geom_point(aes(x = Round, y = NEE), color = "#009E73") +
+  geom_point(aes(x = Round, y = GPP), color = "#E69F00") +
+  geom_point(aes(x = Round, y = GPP2), color = "#000000") +
+  facet_wrap(~Species*Block)
+
+
 #
 # Negative values make no sense. 
 Flux_data.2 <- Flux_data.1 %>%
@@ -238,7 +267,7 @@ Flux_data.3 <- Flux_data.2 %>%
 # Save flux data to share.
 Flux_data_export <- Flux_data.3 %>%
   select(!MP)
-write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
+# write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 
 #
 #
@@ -251,34 +280,144 @@ Q1_flux <- Flux_data.3 %>%
   mutate(across(Round, ~as.character(.x))) %>%
   mutate(across(c(Block, Species, Round), ~as.factor(.x)))
 #
+# Quick check of data
+#
+# GPP
+hist(Q1_flux$GPP) # Several 0s
+hist(sqrt(Q1_flux$GPP)) # Right skewed
+hist(log(Q1_flux$GPP)) # Left skewed
+#
+# NEE
+hist(Q1_flux$NEE) # Several negative values, but normal distribution around 0.5
+hist(Q1_flux$NEE+5) # Slight right skew
+hist(sqrt(Q1_flux$NEE+5)) # Still slightly skewed
+hist(log(Q1_flux$NEE+5)) # one overrepresented point
+#
+# Resp
+hist(Q1_flux$Resp) # Right skew
+hist(sqrt(Q1_flux$Resp)) # Sort of ok
+hist(log(Q1_flux$Resp)) # Left skew
+
+
+
+Q1_flux %>%
+  ggplot(aes(x = factor(Round, levels = order(levels(Round))), y = GPP, color = Block)) + geom_point()
+
+
+
+
+
+
+# GPP
+#
 # Transform data
-Q1_flux <- Q1_flux %>%
+Q1_flux_GPP <- Q1_flux %>%
   select(Round, Block, Species, GPP, AirT, PAR, SoilT, SoilM) %>%
-  mutate(logGPP = log(GPP+1),
+  mutate(logGPP = log(GPP),
          sqrtGPP = sqrt(GPP),
-         cubeGPP = GPP^(1/9),
+         cubeGPP = GPP^(1/3),
          sqGPP = GPP^2,
          ashinGPP = log(GPP + sqrt(GPP^2 + 1)), # inverse hyperbolic sine transformation
-         arcGPP = asin(sqrt(((GPP)/10000))))
+         arcGPP = asin(sqrt(((GPP)/10000))),
+         ihsGPP = ihs(GPP))
 #
-lme1 <- lme(logGPP ~ Round*Species,
+lme1_GPP <- lme(sqrtGPP ~ Species*Round,
+                random = ~1|Block/Species,
+                data = Q1_flux_GPP, na.action = na.exclude, method = "REML")
+lme1_GPP2 <- lme(sqrtGPP ~ Species * AirT * PAR * SoilT * SoilM,
             random = ~1|Block/Species,
-            data = Q1_flux, na.action = na.exclude, method = "REML")
+            data = Q1_flux_GPP, na.action = na.exclude, method = "REML")
 #
 # Using lme4 package:
 # lmer(logEt_prod ~ Round*Species + (1 | Block/Species), data = Q1_ARA, na.action = na.exclude)
 #
 # Checking assumptions:
 par(mfrow = c(1,2))
-plot(fitted(lme1), resid(lme1), 
+plot(fitted(lme1_GPP), resid(lme1_GPP), 
      xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
-qqnorm(resid(lme1), main = "Normally distributed?")                 
-qqline(resid(lme1), main = "Homogeneity of Variances?", col = 2) #OK
-plot(lme1)
+qqnorm(resid(lme1_GPP), main = "Normally distributed?")                 
+qqline(resid(lme1_GPP), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1_GPP)
 par(mfrow = c(1,1))
 #
 # model output
-Anova(lme1, type=2)
+Anova(lme1_GPP, type=2)
+Anova(lme1_GPP2, type=2)
+
+
+
+# NEE
+#
+# Transform data
+Q1_flux_NEE <- Q1_flux %>%
+  select(Round, Block, Species, NEE, AirT, PAR, SoilT, SoilM) %>%
+  mutate(plusNEE = NEE+5,
+         logNEE = log(NEE+2),
+         sqrtNEE = sqrt(NEE+2),
+         cubeNEE = NEE^(1/3),
+         sqNEE = NEE^2,
+         ashinNEE = log(NEE + sqrt(NEE^2 + 1)), # inverse hyperbolic sine transformation
+         arcNEE = asin(sqrt(((NEE+2)/10000))),
+         ihsNEE = ihs(NEE))
+#
+lme1_NEE <- lme(plusNEE ~ Round*Species + AirT + PAR + SoilT + SoilM,
+            random = ~1|Block/Species,
+            data = Q1_flux_NEE, na.action = na.exclude, method = "REML")
+#
+#
+# Using lme4 package:
+# lmer(logEt_prod ~ Round*Species + (1 | Block/Species), data = Q1_ARA, na.action = na.exclude)
+#
+# Checking assumptions:
+par(mfrow = c(1,2))
+plot(fitted(lme1_NEE), resid(lme1_NEE), 
+     xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
+qqnorm(resid(lme1_NEE), main = "Normally distributed?")                 
+qqline(resid(lme1_NEE), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1_NEE)
+par(mfrow = c(1,1))
+#
+# model output
+Anova(lme1_NEE, type=2)
+
+
+
+# Resp
+#
+# Transform data
+Q1_flux_Resp <- Q1_flux %>%
+  select(Round, Block, Species, Resp, AirT, PAR, SoilT, SoilM) %>%
+  mutate(Resp = if_else(Resp < 0, 0, Resp)) %>%
+  mutate(logResp = log(Resp+1),
+         sqrtResp = sqrt(Resp),
+         cubeResp = Resp^(1/3),
+         sqResp = Resp^2,
+         ashinResp = log(Resp + sqrt(Resp^2 + 1)), # inverse hyperbolic sine transformation
+         arcResp = asin(sqrt(((Resp)/10000))),
+         ihsResp = ihs(Resp))
+#
+lme1_Resp <- lme(sqrtResp ~ Round*Species + AirT + PAR + SoilT + SoilM,
+                 random = ~1|Block/Species,
+                 data = Q1_flux_Resp, na.action = na.exclude, method = "REML")
+#
+#
+# Using lme4 package:
+# lmer(logEt_prod ~ Round*Species + (1 | Block/Species), data = Q1_ARA, na.action = na.exclude)
+#
+# Checking assumptions:
+par(mfrow = c(1,2))
+plot(fitted(lme1_Resp), resid(lme1_Resp), 
+     xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
+qqnorm(resid(lme1_Resp), main = "Normally distributed?")                 
+qqline(resid(lme1_Resp), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1_Resp)
+par(mfrow = c(1,1))
+#
+# model output
+Anova(lme1_Resp, type=2)
+
+
+
 #
 #
 #
@@ -292,7 +431,48 @@ Anova(lme1, type=2)
 #
 #
 #-------  ♪   Flux          ♪ -------
+#
+# Summary data
+NEE_sum <- summarySE(Flux_data.3, measurevar = "NEE", groupvars = c("Round", "Species"))
+Resp_sum <- summarySE(Flux_data.3, measurevar = "Resp", groupvars = c("Round", "Species"))
+GPP_sum <- summarySE(Flux_data.3, measurevar = "GPP", groupvars = c("Round", "Species"))
 
+# NEE
+NEE_sum %>%
+  ggplot() +
+  geom_errorbar(aes(x = Round, y = NEE, ymin=NEE, ymax=NEE+se), position=position_dodge(.9)) +
+  geom_col(aes(x = Round, y = NEE), color = "black") +
+  scale_x_discrete(labels = measuringPeriod) +
+  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  #coord_cartesian(ylim = c(0,150)) +
+  labs(x = "Round", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
+  theme_classic(base_size = 20) +
+  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+#
+# Respiration
+Resp_sum %>%
+  ggplot() +
+  geom_errorbar(aes(x = Round, y = Resp, ymin=Resp, ymax=Resp+se), position=position_dodge(.9)) +
+  geom_col(aes(x = Round, y = Resp), color = "black") +
+  #scale_x_discrete(labels = measuringPeriod) +
+  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  #coord_cartesian(ylim = c(0,150)) +
+  labs(x = "Round", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
+  theme_classic(base_size = 20) +
+  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+
+#
+# GPP
+GPP_sum %>%
+  ggplot() +
+  geom_errorbar(aes(x = Round, y = GPP, ymin=GPP, ymax=GPP+se), position=position_dodge(.9)) +
+  geom_col(aes(x = Round, y = GPP), color = "black") +
+  #scale_x_discrete(labels = measuringPeriod) +
+  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  #coord_cartesian(ylim = c(0,150)) +
+  labs(x = "Round", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Ecosystem gross primary production") + 
+  theme_classic(base_size = 20) +
+  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
 #
 #
 #
