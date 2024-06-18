@@ -49,11 +49,13 @@ AirT_flux <- bind_rows(airT_all, AirT_20200901, AirT_20200902)
 # Clean files by isolating mean temperature from unit and splitting date and time
 AirT_flux <- AirT_flux %>%
   separate(AirT, sep = " ", into = c("AirT", "Unit")) %>%
+  separate(Max_Temp, sep = " ", into = c("Max_Temp_C", "UnitMax")) %>%
+  separate(Min_Temp, sep = " ", into = c("Min_Temp_C", "UnitMin")) %>%
   separate(Date_time, sep = " ", into = c("Date", "Time")) %>%
   separate(Time, sep = ":", into = c("hour", "min", "sec")) %>%
   unite(hour, min, col = "Time", sep = ":") %>%
   #unite(Date, Time, col = "Day_ID", sep = " ") %>%
-  select(!c("sec", "id")) %>%
+  select(!c("sec", "id", "Unit", "UnitMax", "UnitMin")) %>%
   mutate(across(c(AirT), as.numeric)) # Set temperature as numeric
 #
 # How many unique timepoints are there?
