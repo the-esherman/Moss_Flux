@@ -44,7 +44,7 @@ PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
 #
 # EM50 logger data (Soil temperature and moisture and PAR)
 # Cleaned from the N2-fixation script
-EM50_Heath <- read_csv("Data_clean/Heath_EM50_simple.csv", col_names = TRUE)
+EM50_Heath <- read_csv("Data_clean/Heath_EM50.csv", col_names = TRUE)
 #
 # MP, or Round in months
 measuringPeriod <- c("Sept",	"Oct",	"Nov",	"Feb",	"Mar",	"May",	"Jun",	"Jul",	"Sept",	"Oct",	"Nov")
@@ -147,7 +147,7 @@ x %>%
 
 
 #
-# Negative values make no sense. 
+# Negative GPP values make no sense. 
 Flux_data.2 <- Flux_data.1 %>%
   mutate(GPP = if_else(GPP <= 0, 0, GPP),
          MP = case_when(Round == 1 ~ "September_2020",
@@ -220,11 +220,21 @@ AirT_wetland <- AirT_wetland %>%
   rename("AirT" = AirT_C)
 #
 # EM50 logger from heath
-EM50_Heath <- EM50_Heath %>%
-  rename("Time" = Tid)
+EM50_Heath.1 <- EM50_Heath %>%
+  rowwise() %>%
+  mutate(Soil_moisture = mean(c(Soil_moisture_B, Soil_moisture_P, Soil_moisture_R, Soil_moisture_W, Soil_moisture_Y, Soil_moisture_G), na.rm = TRUE),
+         Soil_temperature = mean(c(Soil_temperature_B, Soil_temperature_P, Soil_temperature_R, Soil_temperature_W, Soil_temperature_Y, Soil_temperature_G), na.rm = TRUE)) %>%
+  mutate(Soil_moisture = Soil_moisture*100) %>%
+  ungroup() %>%
+  select(Date_time, Soil_moisture, Soil_temperature, PAR) %>%
+  separate_wider_delim(Date_time, delim = " ", names = c("Date", "Time"), too_few = "debug", too_many = "debug") %>%
+  mutate(Date = ymd(Date),
+         Time = hms::as_hms(Time)) %>%
+  select(Date, Time, Soil_moisture, Soil_temperature, PAR) %>%
+  filter(!is.na(Soil_moisture) & !is.na(Soil_temperature))
 #
 # Combine loggers from site
-Environ <- full_join(EM50_Heath, AirT_wetland, by = join_by(Date, Time)) %>%
+Environ <- full_join(EM50_Heath.1, AirT_wetland, by = join_by(Date, Time)) %>%
   left_join(Time_flux, by = join_by(Date))
 #
 # Keep only time interval where measurements were taken
@@ -237,7 +247,7 @@ Environ.2 <- Environ  %>%
                           Date > ymd("20220327") ~ Time+hms::hms(3600),
                           TRUE ~ Time)) %>%
   group_by(Date) %>%
-  mutate(Remov = case_when(Time >= Early & Time <= Late ~ "No",
+  mutate(Remov = case_when(Time >= hms::round_hms(Early, 3600) & Time <= hms::round_hms(Late, 3600) ~ "No",
                            TRUE ~ "Yes")) %>%
   ungroup() %>%
   filter(Remov == "No") %>%
@@ -249,9 +259,8 @@ Environ.3 <- Environ.2 %>%
             SoilM = mean(Soil_moisture, na.rm = T),
             AirT = mean(AirT, na.rm = T),
             PAR = mean(PAR, na.rm = T),
-            .by = Date) %>%
-  # PAR logger only seems to have been placed on the 23rd of September 2020 (2020-09-23)
-  mutate(PAR = if_else(Date == ymd("20200901") | Date == ymd("20200902"), NA, PAR))
+            .by = Date)
+  # PAR logger was placed on the 23rd of September 2020 (2020-09-23), but another project had logger out from before
 #
 #
 # Combine AirT and PAR measurements with flux data
@@ -259,6 +268,14 @@ Flux_data.3 <- Flux_data.2 %>%
   left_join(Environ.3, by = join_by(Date)) %>%
   left_join(Environ_flux.3, by = join_by(Date))
 
+
+
+
+Flux_data.3 %>%
+  ggplot(aes(x = AirT, y = AirT_flux)) + geom_point()
+
+Flux_data.3 %>%
+  ggplot(aes(x = PAR, y = PAR_flux)) + geom_point()
 
 # 
 # Next:
@@ -288,6 +305,7 @@ Q1_flux <- Flux_data.3 %>%
 hist(Q1_flux$GPP) # Several 0s
 hist(sqrt(Q1_flux$GPP)) # Right skewed
 hist(log(Q1_flux$GPP)) # Left skewed
+hist(ihs(Q1_flux$GPP)) # Right skewed
 #
 # NEE
 hist(Q1_flux$NEE) # Several negative values, but normal distribution around 0.5
@@ -303,7 +321,7 @@ hist(log(Q1_flux$Resp)) # Left skew
 
 
 Q1_flux %>%
-  ggplot(aes(x = factor(Round, levels = order(levels(Round))), y = GPP, color = Block)) + geom_point()
+  ggplot(aes(x = factor(Round, levels = order(levels(Round))), y = GPP, color = Block)) + geom_point() + facet_wrap(~Species)
 
 
 
