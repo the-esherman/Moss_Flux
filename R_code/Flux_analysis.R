@@ -515,23 +515,49 @@ plot_ly(Environ.plot.x, x = ~Date_time, y = ~PAR, name = "PAR", type = 'scatter'
 # <><><><><> MAIN ENVIRONMENTAL PLOT - FIG X <><><><><>
 #
 #
+# Cut-off dates
+measureDays <- c(as.Date("2020-09-10"),as.Date("2021-11-20"))
+#
 # Air temperature
 airT_plot <- Environ.plot %>%
   ggplot() +
   geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
-  geom_line(aes(x = Date, y = AirT, lty = "Air temperature")) +
-  geom_line(aes(x = Date, y = SoilT, lty = "Soil temperature")) +
+  geom_line(aes(x = Date, y = AirT)) +
   scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
-  coord_cartesian(xlim = c(as.Date("2020-09-01"),as.Date("2021-12-01"))) +
-  labs(x = NULL, y = "Air and soil temperature (°C)", x = "Time of year") +
-  guides(lty = guide_legend(title = "Mean diel temperature")) +
+  coord_cartesian(xlim = measureDays) +
+  labs(x = NULL, y = "Air temperature (°C)", x = "Time of year") +
   theme_bw(base_size = 25) +
-  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15))
+  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
-airT_legend <- get_legend(airT_plot)
-airT_plot.2 <- airT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 18))#, axis.title.y = element_text(size = 25)) 
-#airT_plot <- airT_plot + guides(lty = NULL)
+# Soil temperature
+soilT_plot <- Environ.plot %>%
+  ggplot() +
+  geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
+  geom_line(aes(x = Date, y = SoilT)) +
+  scale_y_continuous(breaks = c(-10, -5, 0, 5, 10, 15), minor_breaks = c(-7.5, -2.5, 2.5, 7.5, 12.5)) +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+  coord_cartesian(xlim = measureDays) +
+  labs(x = NULL, y = "Soil temperature (°C)", x = "Time of year") +
+  theme_bw(base_size = 25) +
+  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
+#
+# Air and soil temperature in one
+# airT_plot <- Environ.plot %>%
+#   ggplot() +
+#   geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
+#   geom_line(aes(x = Date, y = AirT, lty = "Air temperature")) +
+#   geom_line(aes(x = Date, y = SoilT, lty = "Soil temperature")) +
+#   scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
+#   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+#   coord_cartesian(xlim = c(as.Date("2020-09-01"),as.Date("2021-12-01"))) +
+#   labs(x = NULL, y = "Temperature (°C)", x = "Time of year") +
+#   guides(lty = guide_legend(title = "Mean diel temperature")) +
+#   theme_bw(base_size = 25) +
+#   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
+# #
+# airT_legend <- get_legend(airT_plot)
+# airT_plot.2 <- airT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 18), axis.title.y = element_text(size = 15))
 #
 # Soil moisture
 soilM_plot <- Environ.plot %>%
@@ -539,11 +565,10 @@ soilM_plot <- Environ.plot %>%
   geom_line(aes(x = Date, y = SoilM)) +
   scale_y_continuous(breaks = c(0, 10, 20, 30), minor_breaks = c(-5, 5, 15, 25, 35)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
-  coord_cartesian(xlim = c(as.Date("2020-09-01"),as.Date("2021-12-01"))) +
+  coord_cartesian(xlim = measureDays) +
   labs(x = NULL, y = "VWC (%)", x = "Time of year") +
-  guides(lty = guide_legend(title = "Mean diel VWC")) +
   theme_bw(base_size = 25) +
-  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15))
+  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
 # PAR 
 PAR_plot <- Environ.plot %>%
@@ -551,14 +576,16 @@ PAR_plot <- Environ.plot %>%
   geom_line(aes(x = Date, y = PAR)) +
   scale_y_continuous(breaks = c(0, 200, 400, 600), minor_breaks = c(100, 300, 500, 700)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day", date_labels = "%d-%b") +
-  coord_cartesian(xlim = c(as.Date("2020-09-01"), as.Date("2021-12-01"))) +
+  coord_cartesian(xlim = measureDays) +
   labs(x = "Time of year", y = expression("PAR (µmol  "*m^-2*" "*s^-1*")"), x = "Time of year") +
-  guides(lty = guide_legend(title = "Mean diel PAR")) +
   theme_bw(base_size = 25) +
-  theme(legend.position = "bottom", axis.text.y = element_text(size = 15))
+  theme(legend.position = "bottom", axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
 # Plot graph
-grid.arrange(airT_legend, airT_plot.2, soilM_plot, PAR_plot, widths = 2.8, heights = c(0.5, 3, 3, 3))
+# Align main graphs
+plot_grid(airT_plot, soilT_plot, soilM_plot, PAR_plot, align = "v", ncol = 1, rel_heights = c(3,3,2.5,3.5))
+# Combine with title
+# grid.arrange(airT_legend, plot1, heights = c(0.5, 9))
 #
 #
 # <><><><><> END - FIG X <><><><><>
