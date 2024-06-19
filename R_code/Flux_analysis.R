@@ -4,6 +4,10 @@
 # Analysis - bryophyte flux
 # 
 #=======  ♣   Libraries     ♣ =======
+#
+# To get months in the right format (i.e. not in whatever local the computer has, e.g. Swedish)
+Sys.setlocale("LC_ALL", 'en_GB.UTF-8')
+#
 library(plotly)
 library(tidyverse)
 library(readxl)
@@ -11,6 +15,8 @@ library(lubridate)
 library(car)
 library(nlme)
 library(vegan)
+library(gridExtra)
+library(cowplot)
 #
 #
 #
@@ -292,6 +298,11 @@ Flux_data_export <- Flux_data.3 %>%
 #
 #
 #=======  §§  Statistics    §§ =======
+#-------  »   Environmental NMDS        « -------
+
+# 
+#
+#
 #-------  »   Q1            « -------
 # 
 #
@@ -443,9 +454,116 @@ Anova(lme1_Resp, type=2)
 #
 #
 #
+
+#-------  »   Q2            « -------
+
+# 
+#
+#
 #=======  ♫♫  Graphs        ♫♫ =======
 #-------  ♪   Environmental ♪ -------
-
+#
+# Environmental data and flux air temperature and PAR. Restricted to time of interest
+Environ.plot <- Environ %>%
+  left_join(Environ_flux, by = join_by(Date, Time)) %>%
+  select(!c(Early.x, Late.x, Early.y, Late.y)) %>%
+  summarise(SoilT = mean(Soil_temperature, na.rm = T), # Not sure if averaging by day is the best way about this
+            SoilM = mean(Soil_moisture, na.rm = T),
+            AirT = mean(AirT, na.rm = T),
+            PAR = mean(PAR, na.rm = T),
+            AirT_flux = mean(AirT_flux, na.rm = T),
+            PAR_flux = mean(PAR_flux, na.rm = T),
+            .by = Date) %>%
+  # unite(Date, Time, col = "Date_time", sep = "T") %>%
+  # mutate(Date_time = ymd_hms(Date_time)) %>%
+  filter(Date <= ymd("2021-12-01"))
+#
+# Alternative with all hourly data points
+Environ.plot.x <- Environ %>%
+  left_join(Environ_flux, by = join_by(Date, Time)) %>%
+  select(!c(Early.x, Late.x, Early.y, Late.y)) %>%
+  unite(Date, Time, col = "Date_time", sep = "T") %>%
+  mutate(Date_time = ymd_hms(Date_time)) %>%
+  filter(Date_time <= ymd("2021-12-01"))
+#
+# Plot air and soil temperature with each other
+Environ.plot %>%
+  ggplot() +
+  geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
+  geom_line(aes(x = Date, y = AirT, lty = "Air temperature")) +
+  geom_line(aes(x = Date, y = SoilT, lty = "Soil temperature"))
+#
+# Plot PAR and PAR from the flux measurements
+Environ.plot %>%
+  ggplot() +
+  geom_point(aes(x = Date, y = PAR, shape = "PAR")) +
+  geom_point(aes(x = Date, y = PAR_flux, shape = "flux"))
+#
+# Plot in Plotly
+# Temperatures
+plot_ly(Environ.plot.x, x = ~Date_time, y = ~AirT, name = "Air temperature", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date_time, y = ~AirT_flux, name = "Air temperature flux measurements",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Date_time, y = ~Soil_temperature, name = "Soil temperature",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
+  layout(title = "Temperature measurements", xaxis = list(title = "Date"), yaxis = list(title = "Temperature (°C)"), margin = list(l = 100))
+#
+# PAR
+plot_ly(Environ.plot.x, x = ~Date_time, y = ~PAR, name = "PAR", type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>% 
+  add_trace(x = ~Date_time, y = ~PAR_flux, name = "PAR flux measurements",type = 'scatter', mode = "markers", marker = list(color = "#F0E442")) %>%
+  layout(title = "PAR measurements", xaxis = list(title = "Date"), yaxis = list(title = "PAR (µmol m-2 s-1"), margin = list(l = 100))
+#
+#
+# <><><><><> MAIN ENVIRONMENTAL PLOT - FIG X <><><><><>
+#
+#
+# Air temperature
+airT_plot <- Environ.plot %>%
+  ggplot() +
+  geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
+  geom_line(aes(x = Date, y = AirT, lty = "Air temperature")) +
+  geom_line(aes(x = Date, y = SoilT, lty = "Soil temperature")) +
+  scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+  coord_cartesian(xlim = c(as.Date("2020-09-01"),as.Date("2021-12-01"))) +
+  labs(x = NULL, y = "Air and soil temperature (°C)", x = "Time of year") +
+  guides(lty = guide_legend(title = "Mean diel temperature")) +
+  theme_bw(base_size = 25) +
+  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15))
+#
+airT_legend <- get_legend(airT_plot)
+airT_plot.2 <- airT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 18))#, axis.title.y = element_text(size = 25)) 
+#airT_plot <- airT_plot + guides(lty = NULL)
+#
+# Soil moisture
+soilM_plot <- Environ.plot %>%
+  ggplot() +
+  geom_line(aes(x = Date, y = SoilM)) +
+  scale_y_continuous(breaks = c(0, 10, 20, 30), minor_breaks = c(-5, 5, 15, 25, 35)) +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+  coord_cartesian(xlim = c(as.Date("2020-09-01"),as.Date("2021-12-01"))) +
+  labs(x = NULL, y = "VWC (%)", x = "Time of year") +
+  guides(lty = guide_legend(title = "Mean diel VWC")) +
+  theme_bw(base_size = 25) +
+  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15))
+#
+# PAR 
+PAR_plot <- Environ.plot %>%
+  ggplot() +
+  geom_line(aes(x = Date, y = PAR)) +
+  scale_y_continuous(breaks = c(0, 200, 400, 600), minor_breaks = c(100, 300, 500, 700)) +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day", date_labels = "%d-%b") +
+  coord_cartesian(xlim = c(as.Date("2020-09-01"), as.Date("2021-12-01"))) +
+  labs(x = "Time of year", y = expression("PAR (µmol  "*m^-2*" "*s^-1*")"), x = "Time of year") +
+  guides(lty = guide_legend(title = "Mean diel PAR")) +
+  theme_bw(base_size = 25) +
+  theme(legend.position = "bottom", axis.text.y = element_text(size = 15))
+#
+# Plot graph
+grid.arrange(airT_legend, airT_plot.2, soilM_plot, PAR_plot, widths = 2.8, heights = c(0.5, 3, 3, 3))
+#
+#
+# <><><><><> END - FIG X <><><><><>
+#
+#
 
 #
 #
@@ -484,15 +602,49 @@ Resp_sum %>%
 #
 # GPP
 GPP_sum %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum flexuosum",
+                             Species == "S" ~ "S. ???",
+                             TRUE ~ Species)) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21")) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
   ggplot() +
-  geom_errorbar(aes(x = Round, y = GPP, ymin=GPP, ymax=GPP+se), position=position_dodge(.9)) +
-  geom_col(aes(x = Round, y = GPP), color = "black") +
+  geom_errorbar(aes(x = Month, y = GPP, ymin=GPP, ymax=GPP+se), position=position_dodge(.9)) +
+  geom_col(aes(x = Month, y = GPP, fill = BFG)) +
   #scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 5, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
-  labs(x = "Round", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Ecosystem gross primary production") + 
+  labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Ecosystem gross primary production") + 
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+
+  
+
 #
 #
 #
