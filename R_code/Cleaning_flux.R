@@ -2,6 +2,7 @@
 # Script author: Emil A.S. Andersen
 #
 # Cleaning something from raw files
+# Getting time values
 # 
 # rm(list=ls())
 #=======  ♣   Libraries     ♣ =======
@@ -12,7 +13,7 @@ library(lubridate)
 #
 #
 #=======  ♠   Load data     ♠ =======
-# Load tinytags with similar file structure: min, max and avg. temperature
+# Load IRGA data: combined data of each measurement
 flux_path <- "Data_raw/Flux/Flux/"
 flux_folder <- dir(flux_path)
 flux_list <- list()
@@ -21,7 +22,7 @@ flux_list <- list()
 # Loop through each file
 for (file in flux_folder){
 
-  # Load data: all 5TM soil temperature/moisture sensors
+  # Load data: all IRGA CO2 flux measurements
   flux_data <- read_xlsx(paste(flux_path, file, sep = ""), sheet = "Blad1", skip = 2, col_names = TRUE, col_types = "numeric")
   
   # Add file id to new column
@@ -35,6 +36,7 @@ for (file in flux_folder){
 }
 #
 # Combine into one file
+flux_all2 <- bind_rows(flux_list, .id = "File")
 flux_all <- do.call(rbind, flux_list)
 #
 #
