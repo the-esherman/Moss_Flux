@@ -34,10 +34,45 @@ for (file in flux_folder){
   # Remove temp file
   rm(flux_data)
 }
+rm(file)
 #
 # Combine into one file
 flux_all2 <- bind_rows(flux_list, .id = "File")
 flux_all <- do.call(rbind, flux_list)
+#
+
+
+# Combine raw IRGA output data
+fluxRaw_path <- "Data_raw/Flux/Flux raw/"
+fluxRaw_folder <- dir(fluxRaw_path)
+fluxRaw_list <- list()
+
+#
+# Loop through each file
+for (file in fluxRaw_folder){
+  
+  # Load data: all IRGA CO2 flux measurements
+  flux_data <- read_delim(paste(fluxRaw_path, file, sep = ""), skip = 2, col_names = TRUE, col_types = "cccccccccccccccccccc")
+  # Print structure
+  #print(str(flux_data))
+  
+  # Add file id to new column
+  flux_data$file <- str_replace_all(str_extract(file, ".*\\.dat"), c("\\s" = "_", "\\.dat" = ""))
+   
+  # Name each file uniquely, based on filename. Add to list
+  fluxRaw_list[[str_replace_all(str_extract(file, ".*\\.dat"), c("\\s" = "_", "\\.dat" = ""))]] <- flux_data
+  
+  # Remove temp file
+  rm(flux_data)
+}
+rm(file)
+#
+# Combine into one file
+fluxRaw_all2 <- bind_rows(fluxRaw_list)
+fluxRaw_all <- do.call(rbind, fluxRaw_list)
+
+x <- read_delim("Data_raw/Flux/Flux raw/20201001 afternoon.dat", skip = 2, col_names = TRUE, col_types = "cccccccccccccccccccc")
+
 #
 #
 #
