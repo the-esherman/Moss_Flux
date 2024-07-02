@@ -877,6 +877,7 @@ Resp_sum %>%
                          Sp == "Pti" ~ "Leafy liverwort",
                          Sp == "Ra" ~ "Large cushion",
                          Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(Habitat = if_else(BFG == "Sphagnum", "Mire", "Heath")) %>%
   mutate(Month = case_when(Round == 1 ~ "Sept20",
                            Round == 2 ~ "Oct20",
                            Round == 3 ~ "Nov20",
