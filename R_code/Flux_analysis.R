@@ -516,7 +516,7 @@ hist(ihs(Q1_flux$GPP)) # Right skewed
 hist(Q1_flux$NEE) # Several negative values, but normal distribution around 0.5
 hist(Q1_flux$NEE+5) # Slight right skew
 hist(sqrt(Q1_flux$NEE+5)) # Still slightly skewed
-hist(log(Q1_flux$NEE+5)) # one overrepresented point
+hist(log(Q1_flux$NEE+5)) # one point very frequent
 #
 # Resp
 hist(Q1_flux$Resp) # Right skew
@@ -585,9 +585,12 @@ Q1_flux_NEE <- Q1_flux %>%
          arcNEE = asin(sqrt(((NEE+2)/10000))),
          ihsNEE = ihs(NEE))
 #
-lme1_NEE <- lme(plusNEE ~ Round*Species + AirT + PAR + SoilT + SoilM,
+lme1_NEE <- lme(NEE ~ Round*Species + AirT * PAR + SoilT + SoilM,
             random = ~1|Block/Species,
             data = Q1_flux_NEE, na.action = na.exclude, method = "REML")
+lme1_NEE2 <- lme(NEE ~ Species * AirT * PAR * SoilT * SoilM,
+                 random = ~1|Block/Species,
+                 data = Q1_flux_NEE, na.action = na.exclude, method = "REML")
 #
 #
 # Using lme4 package:
@@ -604,6 +607,7 @@ par(mfrow = c(1,1))
 #
 # model output
 Anova(lme1_NEE, type=2)
+Anova(lme1_NEE2, type=2)
 
 
 
@@ -798,27 +802,89 @@ GPP_sum <- summarySE(Flux_data.3, measurevar = "GPP", groupvars = c("Round", "Sp
 
 # NEE
 NEE_sum %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum flexuosum",
+                             Species == "S" ~ "S. ???",
+                             TRUE ~ Species)) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21")) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
   ggplot() +
-  geom_errorbar(aes(x = Round, y = NEE, ymin=NEE, ymax=NEE+se), position=position_dodge(.9)) +
-  geom_col(aes(x = Round, y = NEE), color = "black") +
+  geom_errorbar(aes(x = Month, y = NEE, ymin = NEE, ymax = NEE+se), position = position_dodge(.9)) +
+  geom_col(aes(x = Month, y = NEE, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 5, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
-  labs(x = "Round", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
+  labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
 #
 # Respiration
 Resp_sum %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum flexuosum",
+                             Species == "S" ~ "S. ???",
+                             TRUE ~ Species)) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21")) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
   ggplot() +
-  geom_errorbar(aes(x = Round, y = Resp, ymin=Resp, ymax=Resp+se), position=position_dodge(.9)) +
-  geom_col(aes(x = Round, y = Resp), color = "black") +
+  geom_errorbar(aes(x = Month, y = Resp, ymin = Resp, ymax = Resp+se), position=position_dodge(.9)) +
+  geom_col(aes(x = Month, y = Resp, fill = BFG)) +
   #scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
-  labs(x = "Round", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
+  labs(x = "Measuring period (Month)", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
 
 #
 # GPP
@@ -855,14 +921,14 @@ GPP_sum %>%
                            Round == 11 ~ "Nov21")) %>%
   mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
   ggplot() +
-  geom_errorbar(aes(x = Month, y = GPP, ymin=GPP, ymax=GPP+se), position=position_dodge(.9)) +
+  geom_errorbar(aes(x = Month, y = GPP, ymin = GPP, ymax = GPP+se), position = position_dodge(.9)) +
   geom_col(aes(x = Month, y = GPP, fill = BFG)) +
   #scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
-  labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Ecosystem gross primary production") + 
+  labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"),axis.text.x=element_text(angle=60, hjust=1))
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
 
   
 
