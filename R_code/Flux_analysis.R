@@ -628,6 +628,9 @@ Q1_flux_Resp <- Q1_flux %>%
 lme1_Resp <- lme(sqrtResp ~ Round*Species + AirT + PAR + SoilT + SoilM,
                  random = ~1|Block/Species,
                  data = Q1_flux_Resp, na.action = na.exclude, method = "REML")
+lme1_Resp2 <- lme(sqrtResp ~ Species * AirT * PAR * SoilT * SoilM,
+                 random = ~1|Block/Species,
+                 data = Q1_flux_Resp, na.action = na.exclude, method = "REML")
 #
 #
 # Using lme4 package:
@@ -644,6 +647,7 @@ par(mfrow = c(1,1))
 #
 # model output
 Anova(lme1_Resp, type=2)
+Anova(lme1_Resp2, type=2)
 
 
 
