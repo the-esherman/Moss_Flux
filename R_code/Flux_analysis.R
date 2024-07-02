@@ -799,6 +799,15 @@ plot_grid(airT_plot, soilT_plot, soilM_plot, PAR_plot, align = "v", ncol = 1, re
 NEE_sum <- summarySE(Flux_data.3, measurevar = "NEE", groupvars = c("Round", "Species"))
 Resp_sum <- summarySE(Flux_data.3, measurevar = "Resp", groupvars = c("Round", "Species"))
 GPP_sum <- summarySE(Flux_data.3, measurevar = "GPP", groupvars = c("Round", "Species"))
+SoilT_sum <- summarySE(Flux_data.3, measurevar = "SoilT", groupvars = c("Round", "Species"))
+SoilM_sum <- summarySE(Flux_data.3, measurevar = "SoilM", groupvars = c("Round", "Species"))
+AirT_sum <- summarySE(Flux_data.3, measurevar = "AirT", groupvars = c("Round", "Species"))
+PAR_sum <- summarySE(Flux_data.3, measurevar = "PAR", groupvars = c("Round", "Species"))
+#
+# Combine environmental drivers
+Environ_sum <- reduce(list(SoilT_sum, SoilM_sum, AirT_sum, PAR_sum, GPP_sum), left_join, by = join_by("Round", "Species"))
+
+
 
 # NEE
 NEE_sum %>%
@@ -837,7 +846,7 @@ NEE_sum %>%
   geom_errorbar(aes(x = Month, y = NEE, ymin = NEE, ymax = NEE+se), position = position_dodge(.9)) +
   geom_col(aes(x = Month, y = NEE, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 5, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
   theme_classic(base_size = 20) +
@@ -930,7 +939,49 @@ GPP_sum %>%
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
 
-  
+#
+# GPP with environmental factors
+Flux_data.3 %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum flexuosum",
+                             Species == "S" ~ "S. ???",
+                             TRUE ~ Species)) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21")) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
+  ggplot() +
+  geom_col(aes(x = Month, y = GPP, fill = SoilM)) +
+  #scale_x_discrete(labels = measuringPeriod) +
+  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
+  #coord_cartesian(ylim = c(0,150)) +
+  labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
+  theme_classic(base_size = 20) +
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
+
 
 #
 #
