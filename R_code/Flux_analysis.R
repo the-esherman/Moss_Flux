@@ -325,8 +325,17 @@ Environ.3 <- Environ.2 %>%
 # Combine AirT and PAR measurements with flux data
 Flux_data.3 <- Flux_data.2 %>%
   left_join(Environ.3, by = join_by(Date)) %>%
-  left_join(Environ_flux.3, by = join_by(Date))
-
+  left_join(Environ_flux.3, by = join_by(Date)) %>%
+  # Reduce Soil moisture and temperature to one value, by per species
+  mutate(PAR = case_when(Species == "S" | Species == "Sf" | Species == "Sli" ~ PAR_M,
+                         TRUE ~ PAR),
+         SoilT = case_when(Species == "Sli" ~ SoilT_Mwet,
+                           Species == "Sf" | Species == "S" ~ SoilT_M,
+                           TRUE ~ SoilT),
+         SoilM = case_when(Species == "Sli" ~ SoilM_Mwet,
+                           Species == "Sf" | Species == "S" ~ SoilM_M,
+                           TRUE ~ SoilM)) %>%
+  select(!c(PAR_M, SoilT_Mwet, SoilT_M, SoilM_Mwet, SoilM_M))
 
 
 
