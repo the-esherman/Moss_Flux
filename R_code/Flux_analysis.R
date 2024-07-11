@@ -52,6 +52,7 @@ PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
 # EM50 logger data (Soil temperature and moisture and PAR)
 # Cleaned from the N2-fixation script
 EM50_Heath <- read_csv("Data_clean/Heath_EM50.csv", col_names = TRUE)
+EM50_Mire <- read_csv("Data_clean/Wetland_EM50.csv", col_names = TRUE)
 #
 # MP, or Round in months
 measuringPeriod <- c("Sept",	"Oct",	"Nov",	"Feb",	"Mar",	"May",	"Jun",	"Jul",	"Sept",	"Oct",	"Nov")
@@ -240,11 +241,56 @@ EM50_Heath.1 <- EM50_Heath %>%
   select(Date, Time, Soil_moisture, Soil_temperature, PAR) %>%
   filter(!is.na(Soil_moisture) & !is.na(Soil_temperature))
 #
+# EM50 logger from wetland
+EM50_Mire.1 <- EM50_Mire %>%
+  rowwise() %>%
+  mutate(Soil_moisture_Mwet = mean(c(Soil_moisture_Bwet, Soil_moisture_Pwet, Soil_moisture_Wwet, Soil_moisture_Ywet), na.rm = TRUE),
+         Soil_temperature_Mwet = mean(c(Soil_temperature_Bwet, Soil_temperature_Pwet, Soil_temperature_Wwet, Soil_temperature_Ywet), na.rm = TRUE),
+         Soil_moisture_M = mean(c(Soil_moisture_B, Soil_moisture_P, Soil_moisture_R, Soil_moisture_W, Soil_moisture_Y, Soil_moisture_G), na.rm = TRUE),
+         Soil_temperature_M = mean(c(Soil_temperature_B, Soil_temperature_P, Soil_temperature_R, Soil_temperature_W, Soil_temperature_Y, Soil_temperature_G), na.rm = TRUE)) %>%
+  mutate(Soil_moisture_M = Soil_moisture_M*100,
+         Soil_moisture_Mwet = Soil_moisture_Mwet*100) %>%
+  ungroup() %>%
+  select(Date_time, Soil_moisture_Mwet, Soil_temperature_Mwet, Soil_moisture_M, Soil_temperature_M, PAR) %>%
+  separate_wider_delim(Date_time, delim = " ", names = c("Date", "Time"), too_few = "debug", too_many = "debug") %>%
+  mutate(Date = ymd(Date),
+         Time = hms::as_hms(Time)) %>%
+  select(Date, Time, Soil_moisture_Mwet, Soil_temperature_Mwet, Soil_moisture_M, Soil_temperature_M, PAR) %>%
+  rename("PAR_M" = PAR) %>%
+  filter(!is.na(Soil_moisture_M) & !is.na(Soil_temperature_M))
+#
 # Combine loggers from site
-Environ <- full_join(EM50_Heath.1, AirT_wetland, by = join_by(Date, Time)) %>%
+Environ <- reduce(list(EM50_Heath.1, EM50_Mire.1, AirT_wetland), full_join, by = join_by(Date, Time)) %>%
   left_join(Time_flux, by = join_by(Date))
 #
+# Graph some comparisons:
+#
+# Compare the different temperature measurements
+plot_ly(Environ, x = ~Date, y = ~Soil_temperature_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~Soil_temperature, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Date, y = ~Soil_temperature_Mwet, name = "Wet mire",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
+  layout(title = "Soil temperatures", yaxis = list(title = "°C"), margin = list(l = 100))
+#
+# Temperature is very close to similar for all three sensor locations
+#
+# Compare the different temperature measurements
+plot_ly(Environ, x = ~Date, y = ~PAR_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~PAR, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  layout(title = "PAR", yaxis = list(title = "µmol pr m3 pr s"), margin = list(l = 100))
+#
+# PAR also very similar, but with differences in snow melt-out
+#
+# Compare the different moisture measurements
+plot_ly(Environ, x = ~Date, y = ~Soil_moisture_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~Soil_moisture, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Date, y = ~Soil_moisture_Mwet, name = "Wet mire",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
+  layout(title = "Soil moisture", yaxis = list(title = "VWC"), margin = list(l = 100))
+#
+# It is very much worth it to have different moisture sensors (not surprising)
+#
+#
 # Keep only time interval where measurements were taken
+# But change time to DST for "summer" measurements as flux measurements were with DST
 Environ.2 <- Environ  %>%
   # Introduce DST, as it was used in the field measurements
   # The fine-details of exactly hour when it shifts does not matter, as no measurements were done from 2-3 am when the time shifts
@@ -254,6 +300,7 @@ Environ.2 <- Environ  %>%
                           Date > ymd("20220327") ~ Time+hms::hms(3600),
                           TRUE ~ Time)) %>%
   group_by(Date) %>%
+  # Designate measurements to remove from outside the daily measured times
   mutate(Remov = case_when(Time >= hms::round_hms(Early, 3600) & Time <= hms::round_hms(Late, 3600) ~ "No",
                            TRUE ~ "Yes")) %>%
   ungroup() %>%
@@ -262,7 +309,12 @@ Environ.2 <- Environ  %>%
 #
 # Average over each day
 Environ.3 <- Environ.2 %>%
-  summarise(SoilT = mean(Soil_temperature, na.rm = T),
+  summarise(SoilT_Mwet = mean(Soil_temperature_Mwet, na.rm = T),
+            SoilM_Mwet = mean(Soil_moisture_Mwet, na.rm = T),
+            SoilT_M = mean(Soil_temperature_M, na.rm = T),
+            SoilM_M = mean(Soil_moisture_M, na.rm = T),
+            PAR_M = mean(PAR_M, na.rm = T),
+            SoilT = mean(Soil_temperature, na.rm = T),
             SoilM = mean(Soil_moisture, na.rm = T),
             AirT = mean(AirT, na.rm = T),
             PAR = mean(PAR, na.rm = T),
