@@ -732,8 +732,13 @@ Environ.plot <- Environ %>%
   select(!c(Early.x, Late.x, Early.y, Late.y)) %>%
   summarise(SoilT = mean(Soil_temperature, na.rm = T), # Not sure if averaging by day is the best way about this
             SoilM = mean(Soil_moisture, na.rm = T),
+            SoilT_M = mean(Soil_temperature_M, na.rm = T),
+            SoilT_Mwet = mean(Soil_temperature_Mwet, na.rm = T),
+            SoilM_M = mean(Soil_moisture_M, na.rm = T),
+            SoilM_Mwet = mean(Soil_moisture_Mwet, na.rm = T),
             AirT = mean(AirT, na.rm = T),
             PAR = mean(PAR, na.rm = T),
+            PAR_M = mean(PAR_M, na.rm = T),
             AirT_flux = mean(AirT_flux, na.rm = T),
             PAR_flux = mean(PAR_flux, na.rm = T),
             .by = Date) %>%
@@ -797,14 +802,21 @@ airT_plot <- Environ.plot %>%
 soilT_plot <- Environ.plot %>%
   ggplot() +
   geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
-  geom_line(aes(x = Date, y = SoilT)) +
+  geom_line(aes(x = Date, y = SoilT, lty = "Heath")) +
+  geom_line(aes(x = Date, y = SoilT_M, lty = "Mire")) +
+  geom_line(aes(x = Date, y = SoilT_Mwet, lty = "Wet Mire")) +
   scale_y_continuous(breaks = c(-10, -5, 0, 5, 10, 15), minor_breaks = c(-7.5, -2.5, 2.5, 7.5, 12.5)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
   labs(x = NULL, y = "Soil temperature (°C)", x = "Time of year") +
+  guides(lty = guide_legend(title = "Habitat")) +
   theme_bw(base_size = 25) +
   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
+soilT_legend <- get_legend(soilT_plot)
+soilT_plot.2 <- soilT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+#soilT_plot <- soilT_plot + guides(lty = NULL)
+
 # Air and soil temperature in one
 # airT_plot <- Environ.plot %>%
 #   ggplot() +
@@ -825,18 +837,26 @@ soilT_plot <- Environ.plot %>%
 # Soil moisture
 soilM_plot <- Environ.plot %>%
   ggplot() +
-  geom_line(aes(x = Date, y = SoilM)) +
-  scale_y_continuous(breaks = c(0, 10, 20, 30), minor_breaks = c(-5, 5, 15, 25, 35)) +
+  geom_line(aes(x = Date, y = SoilM, lty = "Heath")) +
+  geom_line(aes(x = Date, y = SoilM_M, lty = "Mire")) +
+  geom_line(aes(x = Date, y = SoilM_Mwet, lty = "Wet Mire")) +
+  #scale_y_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90), minor_breaks = c(-5, 5, 15, 25, 35, 45, 55, 65, 75, 85)) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80), minor_breaks = c( 10, 20, 30, 50, 70, 90)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
   labs(x = NULL, y = "VWC (%)", x = "Time of year") +
   theme_bw(base_size = 25) +
   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
+soilM_legend <- get_legend(soilM_plot)
+soilM_plot.2 <- soilM_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+#soilM_plot <- soilM_plot + guides(lty = NULL)
+#
 # PAR 
 PAR_plot <- Environ.plot %>%
   ggplot() +
-  geom_line(aes(x = Date, y = PAR)) +
+  geom_line(aes(x = Date, y = PAR, lty = "Heath")) +
+  geom_line(aes(x = Date, y = PAR_M, lty = "Mire")) +
   scale_y_continuous(breaks = c(0, 200, 400, 600), minor_breaks = c(100, 300, 500, 700)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day", date_labels = "%d-%b") +
   coord_cartesian(xlim = measureDays) +
@@ -844,11 +864,16 @@ PAR_plot <- Environ.plot %>%
   theme_bw(base_size = 25) +
   theme(legend.position = "bottom", axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
+PAR_plot.2 <- PAR_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_text(size = 15), axis.title.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+#
 # Plot graph
 # Align main graphs
 plot_grid(airT_plot, soilT_plot, soilM_plot, PAR_plot, align = "v", ncol = 1, rel_heights = c(3,3,2.5,3.5))
-# Combine with title
-# grid.arrange(airT_legend, plot1, heights = c(0.5, 9))
+#
+# With added mire environmental values
+# Make all plots align, then add legend
+env_plot <- plot_grid(airT_plot, soilT_plot.2, soilM_plot.2, PAR_plot.2, align = "v", ncol = 1, rel_heights = c(3,3,2.5,3.5))
+plot_grid(env_plot, soilT_legend, ncol = 1, rel_heights = c(9, 1))
 #
 #
 # <><><><><> END - FIG X <><><><><>
