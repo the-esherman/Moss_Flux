@@ -563,8 +563,10 @@ ggplot() +
 # 
 #
 Q1_flux <- Flux_data.3 %>%
-  mutate(across(Round, ~as.character(.x))) %>%
-  mutate(across(c(Block, Species, Round), ~as.factor(.x)))
+  mutate(across(Round, ~as.character(.x)),
+         across(c(Block, Species, Round), ~as.factor(.x)),
+         Habitat = if_else(Species == "S" | Species == "Sf" | Species == "Sli", "Mire", "Heath")) %>%
+  relocate(Habitat, .after = Species)
 #
 # Quick check of data
 #
@@ -599,7 +601,7 @@ Q1_flux %>%
 #
 # Transform data
 Q1_flux_GPP <- Q1_flux %>%
-  select(Round, Block, Species, GPP, AirT, PAR, SoilT, SoilM) %>%
+  select(Round, Block, Species, Habitat, GPP, AirT, PAR, SoilT, SoilM) %>%
   mutate(logGPP = log(GPP),
          sqrtGPP = sqrt(GPP),
          cubeGPP = GPP^(1/3),
@@ -631,6 +633,11 @@ par(mfrow = c(1,1))
 Anova(lme1_GPP, type=2)
 Anova(lme1_GPP2, type=2)
 
+lme1_GPP_test <- lme(sqrtGPP ~ Species * SoilM * PAR,
+                     random = ~1|Block/Species,
+                     data = Q1_flux_GPP, na.action = na.exclude, method = "REML")
+
+Anova(lme1_GPP_test, type=3)
 
 
 # NEE
@@ -647,7 +654,7 @@ Q1_flux_NEE <- Q1_flux %>%
          arcNEE = asin(sqrt(((NEE+2)/10000))),
          ihsNEE = ihs(NEE))
 #
-lme1_NEE <- lme(NEE ~ Round*Species + AirT * PAR + SoilT + SoilM,
+lme1_NEE <- lme(NEE ~ Round*Species,
             random = ~1|Block/Species,
             data = Q1_flux_NEE, na.action = na.exclude, method = "REML")
 lme1_NEE2 <- lme(NEE ~ Species * AirT * PAR * SoilT * SoilM,
@@ -677,7 +684,7 @@ Anova(lme1_NEE2, type=2)
 #
 # Transform data
 Q1_flux_Resp <- Q1_flux %>%
-  select(Round, Block, Species, Resp, AirT, PAR, SoilT, SoilM) %>%
+  select(Round, Block, Species, Habitat, Resp, AirT, PAR, SoilT, SoilM) %>%
   mutate(Resp = if_else(Resp < 0, 0, Resp)) %>%
   mutate(logResp = log(Resp+1),
          sqrtResp = sqrt(Resp),
@@ -687,7 +694,7 @@ Q1_flux_Resp <- Q1_flux %>%
          arcResp = asin(sqrt(((Resp)/10000))),
          ihsResp = ihs(Resp))
 #
-lme1_Resp <- lme(sqrtResp ~ Round*Species + AirT + PAR + SoilT + SoilM,
+lme1_Resp <- lme(sqrtResp ~ Round*Species,
                  random = ~1|Block/Species,
                  data = Q1_flux_Resp, na.action = na.exclude, method = "REML")
 lme1_Resp2 <- lme(sqrtResp ~ Species * AirT * PAR * SoilT * SoilM,
@@ -710,6 +717,49 @@ par(mfrow = c(1,1))
 # model output
 Anova(lme1_Resp, type=2)
 Anova(lme1_Resp2, type=2)
+
+#
+# Remove Sphagnum from model
+Q1_flux_Resp_noSphagn <- Q1_flux_Resp %>%
+  filter(Habitat == "Heath") %>%
+  droplevels() %>%
+  mutate(across(c(Block, Species, Round), ~as.factor(.x)))
+#
+#
+lme1_Resp_noSphag <- lme(sqrtResp ~ Round*Species,
+                         random = ~1|Block/Species,
+                         data = Q1_flux_Resp_noSphagn, na.action = na.exclude, method = "REML")
+#
+par(mfrow = c(1,2))
+plot(fitted(lme1_Resp_noSphag), resid(lme1_Resp_noSphag), 
+     xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
+qqnorm(resid(lme1_Resp_noSphag), main = "Normally distributed?")                 
+qqline(resid(lme1_Resp_noSphag), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1_Resp_noSphag)
+par(mfrow = c(1,1))
+#
+Anova(lme1_Resp_noSphag, type=2)
+#
+# Only Sphagnum species
+Q1_flux_Resp_Sphagn <- Q1_flux_Resp %>%
+  filter(Habitat == "Mire") %>%
+  droplevels() %>%
+  mutate(across(c(Block, Species, Round), ~as.factor(.x)))
+#
+#
+lme1_Resp_Sphag <- lme(sqrtResp ~ Round*Species,
+                         random = ~1|Block/Species,
+                         data = Q1_flux_Resp_Sphagn, na.action = na.exclude, method = "REML")
+#
+par(mfrow = c(1,2))
+plot(fitted(lme1_Resp_Sphag), resid(lme1_Resp_Sphag), 
+     xlab = "fitted", ylab = "residuals", main="Fitted vs. Residuals") 
+qqnorm(resid(lme1_Resp_Sphag), main = "Normally distributed?")                 
+qqline(resid(lme1_Resp_Sphag), main = "Homogeneity of Variances?", col = 2) #OK
+plot(lme1_Resp_Sphag)
+par(mfrow = c(1,1))
+#
+Anova(lme1_Resp_Sphag, type=2)
 
 
 
