@@ -432,12 +432,12 @@ corrplot::corrplot(cor(Flux_data_NMDS.Resp[3:17], method = "kendall"), type = "u
 corrplot::corrplot(cor(Flux_data_NMDS.one[3:37], method = "kendall"), type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
 #
 # Pairwise correlation comparison
-pairs(x = Flux_data_NMDS[4:11], gap = 0, cex.labels = 0.5)
+pairs(x = Flux_data_NMDS[4:11], gap = 0, cex.labels = 1.5)
 # Not much correlation with environmental data and flux
-pairs(x = Flux_data_NMDS.GPP[3:17], gap = 0, cex.labels = 0.5)
-pairs(x = Flux_data_NMDS.NEE[3:17], gap = 0, cex.labels = 0.5)
-pairs(x = Flux_data_NMDS.Resp[3:17], gap = 0, cex.labels = 0.5)
-pairs(x = Flux_data_NMDS.one[3:37], gap = 0, cex.labels = 0.5)
+pairs(x = Flux_data_NMDS.GPP[3:17], gap = 0, cex.labels = 1.5)
+pairs(x = Flux_data_NMDS.NEE[3:17], gap = 0, cex.labels = 1.5)
+pairs(x = Flux_data_NMDS.Resp[3:17], gap = 0, cex.labels = 1.5)
+pairs(x = Flux_data_NMDS.one[3:37], gap = 0, cex.labels = 1)
 #
 # NMDS
 NMDS_environ <- metaMDS(Flux_data_NMDS.GPP[13:17], distance = "bray")#, scaling = 1, autotransform = TRUE) # Does a sqrt transformation and Wisconsin standardization
@@ -448,12 +448,12 @@ NMDS_sp_one <- metaMDS(Flux_data_NMDS.one[8:37], distance = "bray")
 #
 # Species ethylene production fit
 envfit.flux <- envfit(NMDS_environ,
-                    Flux_data_NMDS.GPP[3:12],
-                    permutations = 9999, na.rm = TRUE)
+                      Flux_data_NMDS.GPP[3:12],
+                      permutations = 9999, na.rm = TRUE)
 #
 envfit.flux.GPP <- envfit(NMDS_sp_GPP,
-                      Flux_data_NMDS.GPP[13:17],
-                      permutations = 9999, na.rm = TRUE)
+                          Flux_data_NMDS.GPP[13:17],
+                          permutations = 9999, na.rm = TRUE)
 envfit.flux.NEE <- envfit(NMDS_sp_NEE,
                           Flux_data_NMDS.NEE[13:17],
                           permutations = 9999, na.rm = TRUE)
@@ -461,8 +461,8 @@ envfit.flux.Resp <- envfit(NMDS_sp_Resp,
                           Flux_data_NMDS.Resp[13:17],
                           permutations = 9999, na.rm = TRUE)
 envfit.flux.one <- envfit(NMDS_sp_one,
-                           Flux_data_NMDS.one[3:7],
-                           permutations = 9999, na.rm = TRUE)
+                          Flux_data_NMDS.one[3:7],
+                          permutations = 9999, na.rm = TRUE)
 
 
 #
@@ -512,7 +512,7 @@ par (mfrow = c(1,1))
 #
 # Extract points to create graph
 # Main plot with NMDS scores
-NMDS_environ.plot <- Flux_data_NMDS
+NMDS_environ.plot <- Flux_data_NMDS.GPP
 NMDS_environ.plot$NMDS1 <- NMDS_environ$points[,1]
 NMDS_environ.plot$NMDS2 <- NMDS_environ$points[,2]
 NMDS_environ.plot <- NMDS_environ.plot %>%
