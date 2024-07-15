@@ -343,14 +343,14 @@ Flux_data.3 <- Flux_data.2 %>%
   # Reduce Soil moisture and temperature to one value, by per species
   mutate(PAR = case_when(Species == "S" | Species == "Sf" | Species == "Sli" ~ PAR_M,
                          TRUE ~ PAR),
+         AirT = case_when(Species != "S" & Species != "Sf" & Species != "Sli" ~ AirT_h,
+                          TRUE ~ AirT),
          SoilT = case_when(Species == "Sli" ~ SoilT_Mwet,
                            Species == "Sf" | Species == "S" ~ SoilT_M,
                            TRUE ~ SoilT),
          SoilM = case_when(Species == "Sli" ~ SoilM_Mwet,
                            Species == "Sf" | Species == "S" ~ SoilM_M,
-                           TRUE ~ SoilM),
-         AirT = case_when(Species != "S" & Species != "Sf" & Species != "Sli" ~ AirT_h,
-                          TRUE ~ AirT)) %>%
+                           TRUE ~ SoilM)) %>%
   select(!c(PAR_M, SoilT_Mwet, SoilT_M, SoilM_Mwet, SoilM_M, AirT_h))
 
 
@@ -804,6 +804,7 @@ Environ.plot <- Environ %>%
             SoilM_M = mean(Soil_moisture_M, na.rm = T),
             SoilM_Mwet = mean(Soil_moisture_Mwet, na.rm = T),
             AirT = mean(AirT, na.rm = T),
+            AirT_h = mean(AirT_h, na.rm = T),
             PAR = mean(PAR, na.rm = T),
             PAR_M = mean(PAR_M, na.rm = T),
             AirT_flux = mean(AirT_flux, na.rm = T),
@@ -857,13 +858,15 @@ measureDays <- c(as.Date("2020-09-10"),as.Date("2021-11-20"))
 airT_plot <- Environ.plot %>%
   ggplot() +
   geom_hline(yintercept = 0, color = "#999999", linewidth = 1) +
-  geom_line(aes(x = Date, y = AirT)) +
+  geom_line(aes(x = Date, y = AirT_h, lty = "Heath")) +
+  geom_line(aes(x = Date, y = AirT, lty = "Mire")) +
   scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
   labs(x = NULL, y = "Air temperature (°C)", x = "Time of year") +
-  theme_bw(base_size = 25) +
-  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
+  # theme_bw(base_size = 25) +
+  # theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #
 # Soil temperature
 soilT_plot <- Environ.plot %>%
