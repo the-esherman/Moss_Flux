@@ -45,6 +45,8 @@ Time_flux <- read_csv("Data_clean/Flux_time.csv", col_names = TRUE)
 AirT_flux <- read_csv("Data_clean/AirT_flux.csv", col_names = TRUE)
 # Air temperature in Wetland habitat
 AirT_wetland <- read_csv("Data_clean/AirT_wetland.csv", col_names = TRUE)
+# Air temperature in Heathland habitat
+AirT_heathland <- read_csv("Data_clean/AirT_heath.csv", col_names = TRUE)
 #
 # PAR at measurement
 PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
@@ -227,6 +229,11 @@ AirT_wetland <- AirT_wetland %>%
   select(Date, Time, AirT_C) %>%
   rename("AirT" = AirT_C)
 #
+# AirT from heathland habitat
+AirT_heathland <- AirT_heathland %>%
+  select(Date, Time, AirT_C) %>%
+  rename("AirT_h" = AirT_C)
+#
 # EM50 logger from heath
 EM50_Heath.1 <- EM50_Heath %>%
   rowwise() %>%
@@ -260,12 +267,17 @@ EM50_Mire.1 <- EM50_Mire %>%
   filter(!is.na(Soil_moisture_M) & !is.na(Soil_temperature_M))
 #
 # Combine loggers from site
-Environ <- reduce(list(EM50_Heath.1, EM50_Mire.1, AirT_wetland), full_join, by = join_by(Date, Time)) %>%
+Environ <- reduce(list(EM50_Heath.1, EM50_Mire.1, AirT_wetland, AirT_heathland), full_join, by = join_by(Date, Time)) %>%
   left_join(Time_flux, by = join_by(Date))
 #
 # Graph some comparisons:
 #
-# Compare the different temperature measurements
+# Compare the different air temperature measurements
+plot_ly(Environ, x = ~Date, y = ~AirT, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~AirT_h, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  layout(title = "Soil temperatures", yaxis = list(title = "°C"), margin = list(l = 100))
+#
+# Compare the different soil temperature measurements
 plot_ly(Environ, x = ~Date, y = ~Soil_temperature_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
   add_trace(x = ~Date, y = ~Soil_temperature, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
   add_trace(x = ~Date, y = ~Soil_temperature_Mwet, name = "Wet mire",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
@@ -273,14 +285,14 @@ plot_ly(Environ, x = ~Date, y = ~Soil_temperature_M, name = "Mire", type = 'scat
 #
 # Temperature is very close to similar for all three sensor locations
 #
-# Compare the different temperature measurements
+# Compare the different PAR measurements
 plot_ly(Environ, x = ~Date, y = ~PAR_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
   add_trace(x = ~Date, y = ~PAR, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
   layout(title = "PAR", yaxis = list(title = "µmol pr m3 pr s"), margin = list(l = 100))
 #
 # PAR also very similar, but with differences in snow melt-out
 #
-# Compare the different moisture measurements
+# Compare the different soil moisture measurements
 plot_ly(Environ, x = ~Date, y = ~Soil_moisture_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
   add_trace(x = ~Date, y = ~Soil_moisture, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
   add_trace(x = ~Date, y = ~Soil_moisture_Mwet, name = "Wet mire",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
@@ -317,8 +329,10 @@ Environ.3 <- Environ.2 %>%
             SoilT = mean(Soil_temperature, na.rm = T),
             SoilM = mean(Soil_moisture, na.rm = T),
             AirT = mean(AirT, na.rm = T),
+            AirT_h = mean(AirT_h, na.rm = T),
             PAR = mean(PAR, na.rm = T),
-            .by = Date)
+            .by = Date) %>%
+  mutate(AirT_h = if_else(is.na(AirT_h), AirT, AirT_h)) # As the last couple of heathland tinytags were not logged, use air temperature from wetland
   # PAR logger was placed on the 23rd of September 2020 (2020-09-23), but another project had logger out from before
 #
 #
@@ -334,8 +348,10 @@ Flux_data.3 <- Flux_data.2 %>%
                            TRUE ~ SoilT),
          SoilM = case_when(Species == "Sli" ~ SoilM_Mwet,
                            Species == "Sf" | Species == "S" ~ SoilM_M,
-                           TRUE ~ SoilM)) %>%
-  select(!c(PAR_M, SoilT_Mwet, SoilT_M, SoilM_Mwet, SoilM_M))
+                           TRUE ~ SoilM),
+         AirT = case_when(Species != "S" & Species != "Sf" & Species != "Sli" ~ AirT_h,
+                          TRUE ~ AirT)) %>%
+  select(!c(PAR_M, SoilT_Mwet, SoilT_M, SoilM_Mwet, SoilM_M, AirT_h))
 
 
 
