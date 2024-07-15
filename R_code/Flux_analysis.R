@@ -355,6 +355,7 @@ Flux_data.3 %>%
 Flux_data_export <- Flux_data.3 %>%
   select(!MP)
 # write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
+# Flux_data.3 <- read_csv("export/Q1_Flux.csv", col_names = T)
 
 #
 #
