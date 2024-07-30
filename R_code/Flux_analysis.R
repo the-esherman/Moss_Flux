@@ -365,6 +365,21 @@ Flux_data.3 %>%
 # Next:
 # Statistics
 
+Environ_x <- left_join(Environ, Environ_flux, by = join_by(Date, Time))
+
+# Compare the different air temperature measurements
+plot_ly(Environ_x, x = ~Date, y = ~AirT, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~AirT_h, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Date, y = ~Soil_temperature_M, name = "SoilMire", type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>% 
+  add_trace(x = ~Date, y = ~Soil_temperature, name = "SoilHeath",type = 'scatter', mode = "markers", marker = list(color = "#F0E442")) %>%
+  add_trace(x = ~Date, y = ~Soil_temperature_Mwet, name = "Wet mire",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
+  add_trace(x = ~Date, y = ~AirT_flux, name = "Flux Air T", type = "scatter", mode = "markers", marker = list(color = "#000000")) %>%
+  layout(title = "Air and Soil temperatures", yaxis = list(title = "°C"), margin = list(l = 100))
+
+plot_ly(Environ_x, x = ~Date, y = ~PAR_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Date, y = ~PAR, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Date, y = ~PAR_flux, name = "Flux", type = "scatter", mode = "markers", marker = list(color = "#000000")) %>%
+  layout(title = "PAR", yaxis = list(title = "µmol m2 h1"), margin = list(l = 100))
 
 
 # Save flux data to share.
@@ -649,11 +664,11 @@ par(mfrow = c(1,1))
 Anova(lme1_GPP, type=2)
 Anova(lme1_GPP2, type=2)
 
-lme1_GPP_test <- lme(sqrtGPP ~ Species * SoilM * PAR,
+lme1_GPP_test <- lme(sqrt(GPP) ~ Species * AirT * PAR * SoilT * SoilM,
                      random = ~1|Block/Species,
-                     data = Q1_flux_GPP, na.action = na.exclude, method = "REML")
+                     data = Q1_flux, na.action = na.exclude, method = "REML")
 
-Anova(lme1_GPP_test, type=3)
+Anova(lme1_GPP_test, type=2)
 
 
 # NEE
