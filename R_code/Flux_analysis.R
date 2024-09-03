@@ -660,6 +660,20 @@ qqline(resid(lme1_GPP), main = "Homogeneity of Variances?", col = 2) #OK
 plot(lme1_GPP)
 par(mfrow = c(1,1))
 #
+# Residual plots
+plotmo::plotres(lme1_GPP)
+plotmo::plotres(lme1_GPP2)
+#
+# combine residuals and fitted to rest of the data
+x <- bind_cols(Q1_flux_GPP, residuals(lme1_GPP), fitted(lme1_GPP)) %>%
+  rename("residuals" = "...17",
+         "fitted" = "...18")
+#
+# residuals vs fitted
+# color by interest
+ggplot(data = x) + geom_point(aes(x = fitted, y = residuals, color = Species))
+#
+#
 # model output
 Anova(lme1_GPP, type=2)
 Anova(lme1_GPP2, type=2)
