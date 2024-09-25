@@ -3,7 +3,7 @@
 #
 # Analysis - bryophyte flux
 # 
-#=======  ♣   Libraries     ♣ =======
+#=======  ♣   Libraries       ♣ =======
 #
 # To get months in the right format (i.e. not in whatever local the computer has, e.g. Swedish)
 Sys.setlocale("LC_ALL", 'en_GB.UTF-8')
@@ -21,7 +21,7 @@ library(ggrepel)
 #
 #
 #
-#=======  ♠   Load data     ♠ =======
+#=======  ♠   Load data       ♠ =======
 #
 # Load each run
 Run1 <- read_excel("Data_clean/Flux measures simplified.xlsx", col_names = TRUE, sheet = "Run 1")
@@ -61,7 +61,7 @@ measuringPeriod <- c("Sept",	"Oct",	"Nov",	"Feb",	"Mar",	"May",	"Jun",	"Jul",	"S
 #
 #
 #
-#=======  ►   Functions     ◄ =======
+#=======  ►   Functions       ◄ =======
 # From http://www.cookbook-r.com/Manipulating_data/Summarizing_data/
 ## Summarizes data.
 ## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
@@ -109,7 +109,7 @@ ihs <- function(x) {
 #
 #
 #
-#=======  ♦   Main data     ♦ =======
+#=======  ♦   Main data       ♦ =======
 #
 # Combine
 Flux_data <- bind_rows(list(Run1, Run2, Run3, Run4, Run5, Run6, Run7, Run8, Run9, Run10, Run11), .id = "id") %>%
@@ -288,7 +288,7 @@ plot_ly(Environ, x = ~Date, y = ~Soil_temperature_M, name = "Mire", type = 'scat
 # Compare the different PAR measurements
 plot_ly(Environ, x = ~Date, y = ~PAR_M, name = "Mire", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
   add_trace(x = ~Date, y = ~PAR, name = "Heath",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
-  layout(title = "PAR", yaxis = list(title = "µmol pr m3 pr s"), margin = list(l = 100))
+  layout(title = "PAR", yaxis = list(title = "µmol pr m2 pr s"), margin = list(l = 100))
 #
 # PAR also very similar, but with differences in snow melt-out
 #
@@ -391,7 +391,7 @@ Flux_data_export <- Flux_data.3 %>%
 #
 #
 #
-#=======  §§  Statistics    §§ =======
+#=======  §§  Statistics      §§ =======
 #-------  »   Environmental NMDS        « -------
 # 
 # Extract Resp, GPP, NEE and environmental data
@@ -590,7 +590,7 @@ ggplot() +
 # 
 #
 #
-#-------  »   Q1            « -------
+#-------  »   Q1              « -------
 # 
 #
 Q1_flux <- Flux_data.3 %>%
@@ -808,19 +808,34 @@ Anova(lme1_Resp_Sphag, type=2)
 
 
 
+
+#
+# Density plot of environmental data
+# Pivot long
+Flux_data.3.envLong <- Flux_data.3 %>%
+  select(SoilT:PAR) %>%
+  mutate(SoilT = SoilT+273,
+         AirT = AirT+273) %>%
+  pivot_longer(everything(), values_to = "Value", names_to = "Drivers")
+#
+# Density plot
+ggplot(data = Flux_data.3.envLong, aes(x = Value, group = Drivers, fill = Drivers)) +
+  geom_density(adjust = 1.5, alpha = .4)
+
+
 #
 #
 #
 #
 #
 
-#-------  »   Q2            « -------
+#-------  »   Q2              « -------
 
 # 
 #
 #
-#=======  ♫♫  Graphs        ♫♫ =======
-#-------  ♪   Environmental ♪ -------
+#=======  ♫♫  Graphs          ♫♫ =======
+#-------  ♪   Environmental   ♪ -------
 #
 # Environmental data and flux air temperature and PAR. Restricted to time of interest
 Environ.plot <- Environ %>%
@@ -982,7 +997,7 @@ plot_grid(env_plot, soilT_legend, ncol = 1, rel_heights = c(9, 1))
 #
 #
 #
-#-------  ♪   Flux          ♪ -------
+#-------  ♪   Flux            ♪ -------
 #
 # Summary data
 NEE_sum <- summarySE(Flux_data.3, measurevar = "NEE", groupvars = c("Round", "Species"))
@@ -1130,8 +1145,21 @@ GPP_sum %>%
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
 
 #
-# GPP with environmental factors
-Flux_data.3 %>%
+# GPP as mg C
+#
+# Recalculate µmol to mg
+CO2_molMass <- 44.0095
+Flux_GPP <- Flux_data.3 %>%
+  # from µmol CO2 per m2 per s
+  # to mg CO2 per cm2 per h
+  # µmol CO2 m-2 s-1 / 10^6 µmol mol-1 * g mol-1 * 1000 mg g-1 / 10000 cm2 m-2 * 3600 s h-1
+  mutate(GPP_mg_m2_h = (((GPP/10^6)*CO2_molMass*1000)/10000)*3600)
+
+#
+# Average
+GPP_sum2 <- summarySE(Flux_GPP, measurevar = "GPP_mg_m2_h", groupvars = c("Round", "Species"))
+# Graph
+GPP_sum2 %>%
   mutate(Sp = Species,
          Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
                              Species == "Di" ~ "Dicranum scoparium",
@@ -1161,10 +1189,214 @@ Flux_data.3 %>%
                            Round == 8 ~ "Jul21",
                            Round == 9 ~ "Sept21",
                            Round == 10 ~ "Oct21",
-                           Round == 11 ~ "Nov21")) %>%
+                           Round == 11 ~ "Nov21"),
+         GPP = GPP_mg_m2_h) %>%
   mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21")))) %>%
   ggplot() +
-  geom_col(aes(x = Month, y = GPP, fill = SoilM)) +
+  geom_errorbar(aes(x = Month, y = GPP, ymin = GPP, ymax = GPP+se), position = position_dodge(.9)) +
+  geom_col(aes(x = Month, y = GPP, fill = BFG)) +
+  #scale_x_discrete(labels = measuringPeriod) +
+  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
+  #coord_cartesian(ylim = c(0,150)) +
+  labs(x = "Measuring period (Month)", y = expression("GPP (mg "*cm^-2*h^-1*")"), title = "Bryophyte gross primary production") + 
+  theme_classic(base_size = 20) +
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
+#
+#
+#
+#-------  ♪   Flux & drivers  ♪ -------
+
+#
+# correlation plot
+# GPP vs environmental drivers
+Flux_data.plot <- Flux_data.3 %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum flexuosum",
+                             Species == "S" ~ "S. ???",
+                             TRUE ~ Species),
+         Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21")) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum")) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Feb21", "Mar21", "May21", "Jun21", "Jul21", "Sept21", "Oct21", "Nov21"))))
+#
+# Environmental factors long format
+Flux_data.plot.long <- Flux_data.plot %>%
+  select(1:12, 15:17) %>%
+  pivot_longer(cols = 9:12, names_to = "Driver", values_to = "Environmental")
+#
+#
+# Multi correlation plot
+pairs(x = Flux_data.plot[6:12], gap = 0, cex.labels = 1.5)
+corrplot::corrplot(cor(Flux_data.plot[6:12], method = "kendall"), type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+#
+# Get species as group or other variable
+flux_species <- pull(Flux_data.plot[,5])
+flux_groups <- pull(Flux_data.plot[,5])
+#
+# color by group
+pairs(x = Flux_data.plot[6:12], col = rainbow(10)[flux_groups], gap = 0, cex.labels = 1.5)
+#
+# Alternative multi-correlation plot with statistics
+psych::pairs.panels(Flux_data.plot[6:12],
+                    method = "pearson",
+                    lm = TRUE,
+                    pch = 20,
+                    hist.col = 4,
+                    stars = TRUE,
+                    ci = TRUE)
+
+#
+# Per species?
+# Racomitrium lanuginosum
+Flux_data.corr.Ra <- Flux_data.plot %>%
+  filter(Sp == "Ra") %>%
+  select(6:12)
+psych::pairs.panels(Flux_data.corr.Ra, method = "pearson", lm = TRUE, pch = 20, hist.col = 4, stars = TRUE, ci = TRUE)
+#
+# Sphagnum fuscum
+Flux_data.corr.Sf <- Flux_data.plot %>%
+  filter(Sp == "Sf") %>%
+  select(6:12)
+psych::pairs.panels(Flux_data.corr.Sf, method = "pearson", lm = TRUE, pch = 20, hist.col = 4, stars = TRUE, ci = TRUE)
+#
+# Sphagnum flexuosum (mislabelled S. lindbergii)
+Flux_data.corr.Sli <- Flux_data.plot %>%
+  filter(Sp == "Sli") %>%
+  select(6:12)
+psych::pairs.panels(Flux_data.corr.Sli, method = "pearson", lm = TRUE, pch = 20, hist.col = 4, stars = TRUE, ci = TRUE)
+
+
+
+# Simpler correlation plots
+# GPP
+Flux_data.plot.long %>%
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
+                            Driver == "SoilM" ~ "Soil moisture",
+                            Driver == "SoilT" ~ "Soil temperature",
+                            TRUE ~ Driver)) %>%
+  ggplot(aes(x = Environmental, y = GPP)) +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  geom_point(aes(color = Month, shape = Species)) +
+  scale_shape_manual(values = 1:10) +
+  facet_wrap(~Driver, ncol = 2, scales = "free") +
+  labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
+  theme_classic()
+#
+# NEE
+Flux_data.plot.long %>%
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
+                            Driver == "SoilM" ~ "Soil moisture",
+                            Driver == "SoilT" ~ "Soil temperature",
+                            TRUE ~ Driver)) %>%
+  ggplot(aes(x = Environmental, y = NEE)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Driver, ncol = 2, scales = "free") +
+  labs(x = "Environmental driver", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Bryophyte NEE") +
+  theme_classic()
+#
+# Respiration
+Flux_data.plot.long %>%
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
+                            Driver == "SoilM" ~ "Soil moisture",
+                            Driver == "SoilT" ~ "Soil temperature",
+                            TRUE ~ Driver)) %>%
+  ggplot(aes(x = Environmental, y = Resp)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Driver, ncol = 2, scales = "free") +
+  labs(x = "Environmental driver", y = expression("Respiration (µmol "*m^-2*s^-1*")"), title = "Bryophyte Respiration") +
+  theme_classic()
+#
+#
+# With plotly
+# GPP
+# Need to transpose Spec
+Flux_data.plot.wide <- Flux_data.plot %>%
+  select(1:2,4,6:12, 15:16) %>%
+  pivot_longer(cols = NEE:PAR, names_to = "Driver", values_to = "Value") %>%
+  pivot_wider(names_from = Sp, values_from = Value)
+plot_ly(Flux_data.plot.wide[Flux_data.plot.wide$Driver == "SoilM",], x = ~Month, y = ~Au, name = "Aulacomnium turgidum", type = 'scatter', mode = "markers", marker = list(color = "#0072B2")) %>% 
+  add_trace(x = ~Month, y = ~Ra, name = "Racomitrium lanuginosum",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
+  add_trace(x = ~Month, y = ~Po, name = "Polytrichum commune",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
+  layout(title = "Soil moisture", xaxis = list(title = "Month"), yaxis = list(title = "VWC (%)"), margin = list(l = 100))
+
+
+
+#
+# Soil moisture
+Flux_data.plot %>%
+  ggplot(aes(x = SoilM, y = GPP)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Month, ncol = 3, scales = "free") +
+  labs(x = "Soil moisture (VWC %)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP vs Soil moisture") +
+  theme_classic()
+#
+# Per species
+Flux_data.plot %>%
+  ggplot(aes(x = SoilM, y = GPP)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Species, ncol = 3, scales = "free") +
+  labs(x = "Soil moisture (VWC %)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP vs Soil moisture") +
+  theme_classic()
+#
+# Soil temperature
+Flux_data.plot %>%
+  ggplot(aes(x = SoilT, y = GPP)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Species, ncol = 3, scales = "free") +
+  labs(x = "Soil temperature (°C)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP vs Soil temperature") +
+  theme_classic()
+#
+# Air temperature
+Flux_data.plot %>%
+  ggplot(aes(x = AirT, y = GPP)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Month)) +
+  facet_wrap(~Species, ncol = 3, scales = "free") +
+  labs(x = "Air temperature (°C)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP vs Air temperature") +
+  theme_classic()
+#
+# PAR
+Flux_data.plot %>%
+  ggplot(aes(x = PAR, y = GPP)) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_point(aes(color = Species)) +
+  facet_wrap(~Month, ncol = 3, scales = "free") +
+  labs(x = expression("PAR (µmol "*m^-2~~s^-1*")"), y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP vs PAR") +
+  theme_classic()
+#
+#
+# GPP with environmental factors - bar plots
+Flux_data.plot %>%
+  ggplot() +
+  geom_col(aes(x = Month, y = GPP, fill = AirT)) +
   #scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
@@ -1176,7 +1408,7 @@ Flux_data.3 %>%
 #
 #
 #
-#-------  ♪   Outliers      ♪ -------
+#-------  ♪   Outliers        ♪ -------
 # Check flux data structure
 #
 # Boxplot
@@ -1303,4 +1535,4 @@ Flux_data.3 %>%
 #
 #
 #
-#=======  ■  { The End }    ■ =======
+#=======  ■  { The End }      ■ =======
