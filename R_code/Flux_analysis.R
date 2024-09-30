@@ -829,8 +829,80 @@ ggplot(data = Flux_data.3.envLong, aes(x = Value, group = Drivers, fill = Driver
 #
 #
 
-#-------  »   Q2              « -------
-
+#-------  »   Scaling season  « -------
+# How big is the contribution outside of the summer season (June-August)
+#
+# Bryophyte total GPP
+GPP_sum <- summarySE(Flux_data.3, measurevar = "GPP", groupvars = c("Round", "Species"))
+#
+GPP_sum_Season <- GPP_sum %>%
+  mutate(Season = if_else(Round == 7| Round == 8, "Summer", "Off_season"),
+         Seasons8 = case_when(Round == 1 ~ "Čakča",
+                              Round == 2 ~ "Čakča",
+                              Round == 3 ~ "Čakčadálvi",
+                              Round == 4 ~ "Dálvi",
+                              Round == 5 ~ "Giđđadálvi",
+                              Round == 6 ~ "Giđđa",
+                              Round == 7 ~ "Giđđageassi",
+                              Round == 8 ~ "Geassi",
+                              Round == 9 ~ "Čakča",
+                              Round == 10 ~ "Čakča",
+                              Round == 11 ~ "Čakčadálvi"),
+         Month = case_when(Round == 1 ~ "September",
+                           Round == 2 ~ "October",
+                           Round == 3 ~ "November",
+                           Round == 4 ~ "February",
+                           Round == 5 ~ "March",
+                           Round == 6 ~ "May",
+                           Round == 7 ~ "June",
+                           Round == 8 ~ "July",
+                           Round == 9 ~ "September",
+                           Round == 10 ~ "October",
+                           Round == 11 ~ "November"))
+#
+# Summer vs off-season contribution
+GPP_sum_Summer <- GPP_sum_Season %>%
+  summarise(GPP = mean(GPP, na.rm = T), .by = c(Species, Month)) %>%
+  mutate(Season = if_else(Month == "June" | Month == "July", "Summer", "Off_season")) %>%
+  summarise(GPP = sum(GPP, na.rm = T), .by = c(Species, Season)) %>%
+  pivot_wider(values_from = GPP, names_from = Season) %>%
+  mutate(Total_GPP = Off_season + Summer) %>%
+  mutate(fracOff = Off_season/Total_GPP,
+         fracSumm = Summer/Total_GPP)
+# Plot
+GPP_sum_Summer %>%
+  select(Species, fracOff:fracSumm) %>%
+  pivot_longer(2:3, values_to = "GPP", names_to = "Season") %>%
+  ggplot() +
+  geom_col(aes(x = Species, y = GPP, fill = Season))
+#
+# Sami seasons
+GPP_sum_Season8 <- GPP_sum_Season %>%
+  summarise(GPP = mean(GPP, na.rm = T), .by = c(Species, Month)) %>%
+  mutate(Seasons8 = case_when(Month == "September" ~ "Čakča",
+                              Month == "October" ~ "Čakča",
+                              Month == "November" ~ "Čakčadálvi",
+                              Month == "February" ~ "Dálvi",
+                              Month == "March" ~ "Giđđadálvi",
+                              Month == "May" ~ "Giđđa",
+                              Month == "June" ~ "Giđđageassi",
+                              Month == "July" ~ "Geassi")) %>%
+  summarise(GPP = sum(GPP, na.rm = T), .by = c(Species, Seasons8)) %>%
+  pivot_wider(values_from = GPP, names_from = Seasons8) %>%
+  mutate(Total_GPP = Čakča + Čakčadálvi + Dálvi + Giđđadálvi + Giđđa + Giđđageassi + Geassi) %>%
+  mutate(fracČakča = Čakča/Total_GPP,
+         fracČakčadálvi = Čakčadálvi/Total_GPP,
+         fracDálvi = Dálvi/Total_GPP,
+         fracGiđđadálvi = Giđđadálvi/Total_GPP,
+         fracGiđđa = Giđđa/Total_GPP,
+         fracGiđđageassi = Giđđageassi/Total_GPP,
+         fracGeassi = Geassi/Total_GPP)
+# Plot
+GPP_sum_Season8 %>%
+  select(Species, fracČakča:fracGeassi) %>%
+  pivot_longer(2:8, values_to = "GPP", names_to = "Seasons8") %>%
+  ggplot() +
+  geom_col(aes(x = Species, y = GPP, fill = Seasons8))
 # 
 #
 #
