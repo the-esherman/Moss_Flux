@@ -1364,9 +1364,10 @@ psych::pairs.panels(Flux_data.corr.Sli, method = "pearson", lm = TRUE, pch = 20,
 # Simpler correlation plots
 # GPP
 Flux_data.plot.long %>%
-  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature (C)",
-                            Driver == "SoilM" ~ "Soil moisture",
-                            Driver == "SoilT" ~ "Soil temperature",
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature (°C)",
+                            Driver == "SoilM" ~ "Soil moisture (VWC, %)",
+                            Driver == "SoilT" ~ "Soil temperature (°C)",
+                            Driver == "PAR" ~ "PAR (µmol pr m² pr s)",
                             TRUE ~ Driver)) %>%
   ggplot(aes(x = Environmental, y = GPP)) +
   #geom_smooth(method = "lm", se = FALSE, color = "black") +
