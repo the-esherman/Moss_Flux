@@ -979,7 +979,7 @@ airT_plot <- Environ.plot %>%
   scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
-  labs(x = NULL, y = "Air temperature (°C)", x = "Time of year") +
+  labs(x = NULL, y = "Air temp. \n(°C)") +
   # theme_bw(base_size = 25) +
   # theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) +
   theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
@@ -994,12 +994,12 @@ soilT_plot <- Environ.plot %>%
   scale_y_continuous(breaks = c(-10, -5, 0, 5, 10, 15), minor_breaks = c(-7.5, -2.5, 2.5, 7.5, 12.5)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
-  labs(x = NULL, y = "Soil temperature (°C)", x = "Time of year") +
+  labs(x = NULL, y = "Soil temp. \n(°C)") +
   guides(lty = guide_legend(title = "Habitat")) +
   theme_bw(base_size = 25) +
   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
-soilT_legend <- get_legend(soilT_plot)
+soilT_legend <- get_plot_component(soilT_plot, "guide-box", return_all = TRUE)[[4]]  # 1 is right, 2 is left, 3 is bottom, 4 is top
 soilT_plot.2 <- soilT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #soilT_plot <- soilT_plot + guides(lty = NULL)
 
@@ -1017,7 +1017,7 @@ soilT_plot.2 <- soilT_plot + theme_bw(base_size = 25) + theme(legend.position = 
 #   theme_bw(base_size = 25) +
 #   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 # #
-# airT_legend <- get_legend(airT_plot)
+# airT_legend <- get_legend(airT_plot) #get_plot_component(airT_plot, "guide-box", return_all = TRUE)[[4]]  # 1 is right, 2 is left, 3 is bottom, 4 is top
 # airT_plot.2 <- airT_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 18), axis.title.y = element_text(size = 15))
 #
 # Soil moisture
@@ -1030,11 +1030,11 @@ soilM_plot <- Environ.plot %>%
   scale_y_continuous(breaks = c(0, 20, 40, 60, 80), minor_breaks = c( 10, 20, 30, 50, 70, 90)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
   coord_cartesian(xlim = measureDays) +
-  labs(x = NULL, y = "VWC (%)", x = "Time of year") +
+  labs(x = NULL, y = "VWC \n(%)") +
   theme_bw(base_size = 25) +
   theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
-soilM_legend <- get_legend(soilM_plot)
+soilM_legend <- get_plot_component(soilM_plot, "guide-box", return_all = TRUE)[[4]]  # 1 is right, 2 is left, 3 is bottom, 4 is top
 soilM_plot.2 <- soilM_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #soilM_plot <- soilM_plot + guides(lty = NULL)
 #
@@ -1046,7 +1046,7 @@ PAR_plot <- Environ.plot %>%
   scale_y_continuous(breaks = c(0, 200, 400, 600), minor_breaks = c(100, 300, 500, 700)) +
   scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day", date_labels = "%d-%b") +
   coord_cartesian(xlim = measureDays) +
-  labs(x = "Time of year", y = expression("PAR (µmol  "*m^-2*" "*s^-1*")"), x = "Time of year") +
+  labs(x = "Time of year", y = expression("PAR\n(µmol "*m^-2*" "*s^-1*")")) +
   theme_bw(base_size = 25) +
   theme(legend.position = "bottom", axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
