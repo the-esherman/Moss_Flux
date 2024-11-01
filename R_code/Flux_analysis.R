@@ -1369,6 +1369,7 @@ Flux_data.plot.long %>%
                             Driver == "SoilT" ~ "Soil temperature (°C)",
                             Driver == "PAR" ~ "PAR (µmol pr m² pr s)",
                             TRUE ~ Driver)) %>%
+  mutate(across(Driver, ~factor(., levels = c("Air temperature (°C)", "PAR (µmol pr m² pr s)", "Soil temperature (°C)", "Soil moisture (VWC, %)")))) %>%
   ggplot(aes(x = Environmental, y = GPP)) +
   #geom_smooth(method = "lm", se = FALSE, color = "black") +
   geom_point(aes(color = Month, shape = Species)) +
