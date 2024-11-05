@@ -107,6 +107,18 @@ ihs <- function(x) {
   return(y)
 }
 #
+# From https://stackoverflow.com/a/7549819
+# Get linear equation and R2 for plot
+lm_eqn <- function(x, y) {
+  m <- lm(y ~ x);
+  eq <- substitute(atop(italic(y) == a + b %.% italic(x), italic(R)^2~"="~R2*","~~italic(p)~"="~pvalue),
+                   list(a = format(unname(coef(m)[1]), digits = 2),
+                        b = format(unname(coef(m)[2]), digits = 2),
+                        R2 = format(summary(m)$r.squared, digits = 3),
+                        pvalue = ifelse(summary(m)$coefficients[2,4] < 0.001, "< 0.001", format(summary(m)$coefficients[2,4], digits = 2))))
+  as.character(as.expression(eq));
+}
+#
 #
 #
 #=======  ♦   Main data       ♦ =======
@@ -1165,7 +1177,7 @@ Resp_sum %>%
   ggplot() +
   geom_errorbar(aes(x = Month, y = Resp, ymin = Resp, ymax = Resp+se), position=position_dodge(.9)) +
   geom_col(aes(x = Month, y = Resp, fill = BFG)) +
-  #scale_x_discrete(labels = measuringPeriod) +
+  scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
@@ -1209,13 +1221,12 @@ GPP_sum %>%
   ggplot() +
   geom_errorbar(aes(x = Month, y = GPP, ymin = GPP, ymax = GPP+se), position = position_dodge(.9)) +
   geom_col(aes(x = Month, y = GPP, fill = BFG)) +
-  #scale_x_discrete(labels = measuringPeriod) +
+  scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
-
 #
 # GPP as mg C
 #
@@ -1386,9 +1397,10 @@ Flux_data.plot.long %>%
                             Driver == "SoilT" ~ "Soil temperature",
                             TRUE ~ Driver)) %>%
   ggplot(aes(x = Environmental, y = GPP)) +
-  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(aes(color = Month)) +
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "x") +
+  #geom_text(x = 4, y = 1, label = lm_eqn(Flux_data.plot.long$Driver, Flux_data.plot.long$GPP), parse = TRUE) +
   labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
   theme_bw()
 #
