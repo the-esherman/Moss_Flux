@@ -1138,7 +1138,7 @@ NEE_sum %>%
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 #
 # Respiration
 Resp_sum %>%
@@ -1182,7 +1182,7 @@ Resp_sum %>%
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 
 #
 # GPP
@@ -1226,7 +1226,7 @@ GPP_sum %>%
   #coord_cartesian(ylim = c(0,150)) +
   labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
   theme_classic(base_size = 20) +
-  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "bottom")
+  theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 #
 # GPP as mg C
 #
@@ -1395,11 +1395,22 @@ Flux_data.plot.long %>%
   mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
                             Driver == "SoilM" ~ "Soil moisture",
                             Driver == "SoilT" ~ "Soil temperature",
-                            TRUE ~ Driver)) %>%
+                            TRUE ~ Driver),
+         Species = case_when(Sp == "Au" ~ "Aulacomnium\n turgidum",
+                             Sp == "Di" ~ "Dicranum\n scoparium",
+                             Sp == "Hy" ~ "Hylocomium\n splendens",
+                             Sp == "Pl" ~ "Pleurozium\n schreberi",
+                             Sp == "Po" ~ "Polytrichum\n commune",
+                             Sp == "Pti" ~ "Ptilidium\n ciliare",
+                             Sp == "Ra" ~ "Racomitrium\n lanuginosum",
+                             Sp == "Sf" ~ "Sphagnum\n fuscum",
+                             Sp == "Sli" ~ "Sphagnum\n majus",
+                             Sp == "S" ~ "Sphagnum\n complex",
+                             TRUE ~ Species)) %>%
   ggplot(aes(x = Environmental, y = GPP)) +
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(aes(color = Month)) +
-  ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "x") +
+  ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "all") +
   #geom_text(x = 4, y = 1, label = lm_eqn(Flux_data.plot.long$Driver, Flux_data.plot.long$GPP), parse = TRUE) +
   labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
   theme_bw()
@@ -1490,9 +1501,20 @@ Flux_data.plot.long %>%
   mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
                             Driver == "SoilM" ~ "Soil moisture",
                             Driver == "SoilT" ~ "Soil temperature",
-                            TRUE ~ Driver)) %>%
+                            TRUE ~ Driver),
+         Species = case_when(Sp == "Au" ~ "Aulacomnium\n turgidum",
+                             Sp == "Di" ~ "Dicranum\n scoparium",
+                             Sp == "Hy" ~ "Hylocomium\n splendens",
+                             Sp == "Pl" ~ "Pleurozium\n schreberi",
+                             Sp == "Po" ~ "Polytrichum\n commune",
+                             Sp == "Pti" ~ "Ptilidium\n ciliare",
+                             Sp == "Ra" ~ "Racomitrium\n lanuginosum",
+                             Sp == "Sf" ~ "Sphagnum\n fuscum",
+                             Sp == "Sli" ~ "Sphagnum\n majus",
+                             Sp == "S" ~ "Sphagnum\n complex",
+                             TRUE ~ Species)) %>%
   ggplot(aes(x = Environmental, y = Resp)) +
-  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(aes(color = Month)) +
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "x") +
   labs(x = "Environmental driver", y = expression("Respiration (µmol "*m^-2*s^-1*")"), title = "Bryophyte Respiration") +
