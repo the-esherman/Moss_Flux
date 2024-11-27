@@ -842,7 +842,7 @@ ggplot(data = Flux_data.3.envLong, aes(x = Value, group = Drivers, fill = Driver
 #
 
 #-------  »   Scaling season  « -------
-# How big is the contribution outside of the summer season (June-August)
+# How big is the contribution outside of the summer season (June-August) DO NOT DO THIS WITH SUCH A WHIMSY METHOD!!!
 #
 # Bryophyte total GPP
 GPP_sum <- summarySE(Flux_data.3, measurevar = "GPP", groupvars = c("Round", "Species"))
@@ -1231,7 +1231,7 @@ GPP_sum %>%
 # GPP as mg C
 #
 # Recalculate µmol to mg
-CO2_molMass <- 44.0095
+CO2_molMass <- 44.0095 # g mol-1
 Flux_GPP <- Flux_data.3 %>%
   # from µmol CO2 per m2 per s
   # to mg CO2 per cm2 per h
