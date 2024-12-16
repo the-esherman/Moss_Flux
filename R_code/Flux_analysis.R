@@ -18,6 +18,7 @@ library(vegan)
 library(gridExtra)
 library(cowplot)
 library(ggrepel)
+library(ggh4x)
 #
 #
 #
@@ -1137,7 +1138,20 @@ NEE_sum %>%
   facet_wrap( ~ Species, ncol = 3, scales = "free") + 
   #coord_cartesian(ylim = c(0,150)) +
   viridis::scale_fill_viridis(discrete = T) +
-  labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") + 
+  labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") +  
+  # Specify y-axes scales so that some species match
+  # facetted_pos_scales(
+  #   y = list(Species == "Aulacomnium turgidum" ~ scale_y_continuous(limits = c(-0.05, 1.8)),
+  #            Species == "Dicranum scoparium" ~ scale_y_continuous(limits = c(-0.05, 1.8)),
+  #            Species == "Hylocomium splendens" ~ scale_y_continuous(limits = c(-0.05, 1.8)),
+  #            Species == "Pleurozium schreberi" ~ scale_y_continuous(limits = c(-0.1, 1.8)),
+  #            Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(-0.5, 1.5)),
+  #            Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(-0.5, 1.6)),
+  #            Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(-0.1, 1.8)),
+  #            Species == "Sphagnum complex" ~ scale_y_continuous(limits = c(-0.05, 0.9)),
+  #            Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(-0.05, 0.9)),
+  #            Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(-0.05, 1.8)))
+  # ) +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 #
@@ -1180,9 +1194,9 @@ Resp_sum %>%
   geom_col(aes(x = Month, y = Resp, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
   facet_wrap( ~ Species, ncol = 3, scales = "free") + 
-  #coord_cartesian(ylim = c(0,150)) +
+  coord_cartesian(ylim = c(0,2.1)) +
   viridis::scale_fill_viridis(discrete = T) +
-  labs(x = "Measuring period (Month)", y = expression(R[e]*" (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") + 
+  labs(x = "Measuring period (Month)", y = expression("ER (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 
@@ -1228,6 +1242,19 @@ GPP_sum %>%
   #coord_cartesian(ylim = c(0,150)) +
   viridis::scale_fill_viridis(discrete = T) +
   labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
+  # Specify y-axes scales so that some species match
+  facetted_pos_scales(
+    y = list(Species == "Aulacomnium turgidum" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Dicranum scoparium" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Hylocomium splendens" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Pleurozium schreberi" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum complex" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(0, 2.2)))
+  ) +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 #
