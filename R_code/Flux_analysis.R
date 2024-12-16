@@ -1416,7 +1416,7 @@ Flux_data.plot.long %>%
   geom_point(aes(color = Month, shape = Species)) +
   scale_shape_manual(values = 1:10) +
   facet_wrap(~Driver, ncol = 2, scales = "free") +
-  viridis::scale_colour_viridis(discrete = T) +
+  viridis::scale_colour_viridis(discrete = T, option = "H") +
   labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
   theme_classic()
 #
@@ -1443,7 +1443,7 @@ Flux_data.plot.long %>%
   geom_point(aes(color = Month)) +
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "all") +
   #geom_text(x = 4, y = 1, label = lm_eqn(Flux_data.plot.long$Driver, Flux_data.plot.long$GPP), parse = TRUE) +
-  viridis::scale_colour_viridis(discrete = T) +
+  viridis::scale_colour_viridis(discrete = T, option = "H") +
   labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
   theme_bw()
 #
@@ -1549,7 +1549,7 @@ Flux_data.plot.long %>%
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(aes(color = Month)) +
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "x") +
-  viridis::scale_colour_viridis(discrete = T) +
+  viridis::scale_colour_viridis(discrete = T, option = "H") +
   labs(x = "Environmental driver", y = expression("Respiration (µmol "*m^-2*s^-1*")"), title = "Bryophyte Respiration") +
   theme_bw()
 
