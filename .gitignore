@@ -16,4 +16,5 @@ export/*
 
 # Removed code. Should not be committed
 R_code/Removed_cleaning_loggers.R
-R_code/Paper_calculations.R 
+R_code/Paper_calculations.R
+R_code/Removed_flux.R
