@@ -1423,9 +1423,10 @@ Flux_data.plot.long %>%
 #
 # GPP: Species and drivers faceted
 Flux_data.plot.long %>%
-  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
-                            Driver == "SoilM" ~ "Soil moisture",
-                            Driver == "SoilT" ~ "Soil temperature",
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature (°C)",
+                            Driver == "SoilM" ~ "Soil moisture (VWC, %)",
+                            Driver == "SoilT" ~ "Soil temperature (°C)",
+                            Driver == "PAR" ~ "PAR (µmol pr m² pr s)",
                             TRUE ~ Driver),
          Species = case_when(Sp == "Au" ~ "Aulacomnium\n turgidum",
                              Sp == "Di" ~ "Dicranum\n scoparium",
@@ -1444,6 +1445,19 @@ Flux_data.plot.long %>%
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "all") +
   #geom_text(x = 4, y = 1, label = lm_eqn(Flux_data.plot.long$Driver, Flux_data.plot.long$GPP), parse = TRUE) +
   viridis::scale_colour_viridis(discrete = T, option = "H") +
+  # Specify y-axes scales so that some species match
+  facetted_pos_scales(
+    y = list(Species == "Aulacomnium\n turgidum" ~ scale_y_continuous(limits = c(0, 1)),
+             Species == "Dicranum\n scoparium" ~ scale_y_continuous(limits = c(0, 1)),
+             Species == "Hylocomium\n splendens" ~ scale_y_continuous(limits = c(0, 1)),
+             Species == "Pleurozium\n schreberi" ~ scale_y_continuous(limits = c(0, 1)),
+             Species == "Polytrichum\n commune" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
+             Species == "Ptilidium\n ciliare" ~ scale_y_continuous(limits = c(0, 1)),
+             Species == "Racomitrium\n lanuginosum" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
+             Species == "Sphagnum\n complex" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
+             Species == "Sphagnum\n fuscum" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
+             Species == "Sphagnum\n majus" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)))
+  ) +
   labs(x = "Environmental driver", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte GPP") +
   theme_bw()
 #
@@ -1530,9 +1544,10 @@ Flux_data.plot.long %>%
 #
 # Respiration: Species and drivers faceted
 Flux_data.plot.long %>%
-  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature",
-                            Driver == "SoilM" ~ "Soil moisture",
-                            Driver == "SoilT" ~ "Soil temperature",
+  mutate(Driver = case_when(Driver == "AirT" ~ "Air temperature (°C)",
+                            Driver == "SoilM" ~ "Soil moisture (VWC, %)",
+                            Driver == "SoilT" ~ "Soil temperature (°C)",
+                            Driver == "PAR" ~ "PAR (µmol pr m² pr s)",
                             TRUE ~ Driver),
          Species = case_when(Sp == "Au" ~ "Aulacomnium\n turgidum",
                              Sp == "Di" ~ "Dicranum\n scoparium",
@@ -1550,6 +1565,7 @@ Flux_data.plot.long %>%
   geom_point(aes(color = Month)) +
   ggh4x::facet_grid2(Driver ~ Species, scales = "free", independent = "x") +
   viridis::scale_colour_viridis(discrete = T, option = "H") +
+  coord_cartesian(ylim = c(0,3)) +
   labs(x = "Environmental driver", y = expression("Respiration (µmol "*m^-2*s^-1*")"), title = "Bryophyte Respiration") +
   theme_bw()
 
