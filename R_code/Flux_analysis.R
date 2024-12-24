@@ -1174,7 +1174,7 @@ NEE_sum %>%
                              Species == "Ra" ~ "Racomitrium lanuginosum",
                              Species == "Sf" ~ "Sphagnum fuscum",
                              Species == "Sli" ~ "Sphagnum majus",
-                             Species == "S" ~ "Sphagnum complex",
+                             Species == "S" ~ "Sphagnum mixture",
                              TRUE ~ Species)) %>%
   mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
                          Sp == "Di" ~ "Tall unbranched turf",
@@ -1212,7 +1212,7 @@ NEE_sum %>%
   #            Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(-0.5, 1.5)),
   #            Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(-0.5, 1.6)),
   #            Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(-0.1, 1.8)),
-  #            Species == "Sphagnum complex" ~ scale_y_continuous(limits = c(-0.05, 0.9)),
+  #            Species == "Sphagnum mixture" ~ scale_y_continuous(limits = c(-0.05, 0.9)),
   #            Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(-0.05, 0.9)),
   #            Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(-0.05, 1.8)))
   # ) +
@@ -1231,7 +1231,7 @@ Resp_sum %>%
                              Species == "Ra" ~ "Racomitrium lanuginosum",
                              Species == "Sf" ~ "Sphagnum fuscum",
                              Species == "Sli" ~ "Sphagnum majus",
-                             Species == "S" ~ "Sphagnum complex",
+                             Species == "S" ~ "Sphagnum mixture",
                              TRUE ~ Species)) %>%
   mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
                          Sp == "Di" ~ "Tall unbranched turf",
@@ -1277,7 +1277,7 @@ GPP_sum %>%
                              Species == "Ra" ~ "Racomitrium lanuginosum",
                              Species == "Sf" ~ "Sphagnum fuscum",
                              Species == "Sli" ~ "Sphagnum majus",
-                             Species == "S" ~ "Sphagnum complex",
+                             Species == "S" ~ "Sphagnum mixture",
                              TRUE ~ Species)) %>%
   mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
                          Sp == "Di" ~ "Tall unbranched turf",
@@ -1315,7 +1315,7 @@ GPP_sum %>%
              Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(0, 2.2)),
              Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
              Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(0, 2.2)),
-             Species == "Sphagnum complex" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum mixture" ~ scale_y_continuous(limits = c(0, 2.2)),
              Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(0, 2.2)),
              Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(0, 2.2)))
   ) +
@@ -1347,7 +1347,7 @@ GPP_sum2 %>%
                              Species == "Ra" ~ "Racomitrium lanuginosum",
                              Species == "Sf" ~ "Sphagnum fuscum",
                              Species == "Sli" ~ "Sphagnum majus",
-                             Species == "S" ~ "Sphagnum complex",
+                             Species == "S" ~ "Sphagnum mixture",
                              TRUE ~ Species)) %>%
   mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
                          Sp == "Di" ~ "Tall unbranched turf",
@@ -1396,7 +1396,7 @@ Flux_data.plot <- Flux_data.3 %>%
                              Species == "Ra" ~ "Racomitrium lanuginosum",
                              Species == "Sf" ~ "Sphagnum fuscum",
                              Species == "Sli" ~ "Sphagnum majus",
-                             Species == "S" ~ "Sphagnum complex",
+                             Species == "S" ~ "Sphagnum mixture",
                              TRUE ~ Species),
          Month = case_when(Round == 1 ~ "Sept20",
                            Round == 2 ~ "Oct20",
@@ -1459,7 +1459,7 @@ Flux_data.plot.long %>%
                              Sp == "Ra" ~ "Racomitrium\n lanuginosum",
                              Sp == "Sf" ~ "Sphagnum\n fuscum",
                              Sp == "Sli" ~ "Sphagnum\n majus",
-                             Sp == "S" ~ "Sphagnum\n complex",
+                             Sp == "S" ~ "Sphagnum\n mixture",
                              TRUE ~ Species)) %>%
   ggplot(aes(x = Environmental, y = GPP)) +
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
@@ -1476,7 +1476,7 @@ Flux_data.plot.long %>%
              Species == "Polytrichum\n commune" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
              Species == "Ptilidium\n ciliare" ~ scale_y_continuous(limits = c(0, 1)),
              Species == "Racomitrium\n lanuginosum" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
-             Species == "Sphagnum\n complex" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
+             Species == "Sphagnum\n mixture" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
              Species == "Sphagnum\n fuscum" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)),
              Species == "Sphagnum\n majus" ~ scale_y_continuous(limits = c(0, 2.7), breaks = c(0, 0.5, 1, 1.5, 2, 2.5)))
   ) +
@@ -1500,7 +1500,7 @@ Flux_data.plot.long %>%
                              Sp == "Ra" ~ "Racomitrium\n lanuginosum",
                              Sp == "Sf" ~ "Sphagnum\n fuscum",
                              Sp == "Sli" ~ "Sphagnum\n majus",
-                             Sp == "S" ~ "Sphagnum\n complex",
+                             Sp == "S" ~ "Sphagnum\n mixture",
                              TRUE ~ Species)) %>%
   ggplot(aes(x = Environmental, y = Resp)) +
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
@@ -1552,7 +1552,7 @@ plot_ly(Flux_data_GPP_species, x = ~Au, y = ~Round, name = "Aulacomnium turgidum
   add_trace(x = ~Po, y = ~Round, name = "Polytrichum commune",type = 'scatter', mode = "markers", marker = list(color = "#CC79A7")) %>%
   add_trace(x = ~Pti, y = ~Round, name = "Ptilidium ciliare",type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>%
   add_trace(x = ~Ra, y = ~Round, name = "Racomitrium lanuginosum",type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>%
-  add_trace(x = ~S, y = ~Round, name = "Sphagnum complex",type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>%
+  add_trace(x = ~S, y = ~Round, name = "Sphagnum mixture",type = 'scatter', mode = "markers", marker = list(color = "#009E73")) %>%
   add_trace(x = ~Sf, y = ~Round, name = "Sphagnum fuscum",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
   add_trace(x = ~Sli, y = ~Round, name = "Sphagnum majus",type = 'scatter', mode = "markers", marker = list(color = "#D55E00")) %>%
   layout(title = "Photosynthesis per species", xaxis = list(title = "GPP (µmol)"), margin = list(l = 100))
