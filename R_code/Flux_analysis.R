@@ -977,6 +977,31 @@ plot_ly(Environ.plot.x, x = ~Date_time, y = ~PAR, name = "PAR", type = 'scatter'
   layout(title = "PAR measurements", xaxis = list(title = "Date"), yaxis = list(title = "PAR (µmol m-2 s-1"), margin = list(l = 100))
 #
 #
+# Days of the year with air temperature above 14 and 20 degrees
+Environ %>%
+  filter(Date >= ymd("2020-09-01") & Date <= ymd("2021-11-30")) %>%
+  filter(AirT >= 14) %>%
+  distinct(Date)
+# 89 days
+Environ %>%
+  filter(Date >= ymd("2020-09-01") & Date <= ymd("2021-11-30")) %>%
+  filter(AirT >= 20) %>%
+  distinct(Date)
+# 28 days
+# Out of
+Environ %>%
+  filter(Date >= ymd("2020-09-01") & Date <= ymd("2021-11-30")) %>%
+  distinct(Date)
+# 456 days
+#
+# Sphagnum moisture levels
+x <- Environ %>%
+  filter(Date >= ymd("2020-09-01") & Date <= ymd("2021-11-30")) %>%
+  filter(Soil_moisture_Mwet < 10) %>%
+  distinct(Date, .keep_all = T)
+
+#
+#
 # <><><><><> MAIN ENVIRONMENTAL PLOT - FIG X <><><><><>
 #
 #
