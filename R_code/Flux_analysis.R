@@ -1358,6 +1358,142 @@ GPP_sum %>%
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
 #
+#
+# Circular plot
+#
+measuringYear <- tibble(Month = c("Sept20", "Oct20", "Nov20", "Dec20", "Jan21", "Feb21", "Mar21", "Apr21", "May21", "Jun21", "Jul21", "Aug21", "Sept21", "Oct21", "Nov21"))
+measuringYear <- do.call("rbind", replicate(10, measuringYear, simplify = FALSE))
+#
+flux_species <- Flux_data.3 %>%
+  select(Species) %>%
+  distinct(Species)
+flux_species_Year <- uncount(flux_species, 15)
+#
+flux_year <- bind_cols(measuringYear, flux_species_Year)
+#
+GPP_sum_Year <- GPP_sum %>%
+  mutate(Month = case_when(Round == 1 ~ "Sept20",
+                           Round == 2 ~ "Oct20",
+                           Round == 3 ~ "Nov20",
+                           Round == 4 ~ "Feb21",
+                           Round == 5 ~ "Mar21",
+                           Round == 6 ~ "May21",
+                           Round == 7 ~ "Jun21",
+                           Round == 8 ~ "Jul21",
+                           Round == 9 ~ "Sept21",
+                           Round == 10 ~ "Oct21",
+                           Round == 11 ~ "Nov21"))
+#
+# Measuring period with NA
+measuringPeriod.circle <- c("2020\nSep",	"Oct",	"Nov", "Dec", "2021\nJan",	"Feb",	"Mar", "Apr",	"May",	"Jun",	"Jul", "Aug",	"Sep",	"Oct",	"Nov")
+#
+# Colors for the 8 seasons
+seasonFill <- c("#f57d15", "#280b53", "#000004", "#65156e", "#9f2a63", "#fac228", "#fcffa4", "#d44842")
+#
+#
+# Custom labeller function to italicize most, but not the "mixture" in Sphagnum mixture
+italicize_except_mixture <- function(labels) {
+  labels <- as.character(labels)  # Ensure labels are characters
+  
+  # Modify "Sphagnum mixture" to italicize only "Sphagnum"
+  labels <- ifelse(labels == "Sphagnum mixture",
+                   "italic('Sphagnum')~'mixture'",  # Use plotmath expression
+                   paste0("italic('", labels, "')")) # Italicize all others
+  return(labels)
+}
+#
+#
+# Plot
+GPP_circle_seasons <- flux_year %>%
+  left_join(GPP_sum_Year, by = join_by(Month, Species)) %>%
+  mutate(Sp = Species,
+         Species = case_when(Species == "Au" ~ "Aulacomnium turgidum",
+                             Species == "Di" ~ "Dicranum scoparium",
+                             Species == "Hy" ~ "Hylocomium splendens",
+                             Species == "Pl" ~ "Pleurozium schreberi",
+                             Species == "Po" ~ "Polytrichum commune",
+                             Species == "Pti" ~ "Ptilidium ciliare",
+                             Species == "Ra" ~ "Racomitrium lanuginosum",
+                             Species == "Sf" ~ "Sphagnum fuscum",
+                             Species == "Sli" ~ "Sphagnum majus",
+                             Species == "S" ~ "Sphagnum mixture",
+                             TRUE ~ Species)) %>%
+  mutate(BFG = case_when(Sp == "Au" ~ "Short unbranched turf",
+                         Sp == "Di" ~ "Tall unbranched turf",
+                         Sp == "Hy" | Sp == "Pl" ~ "Weft",
+                         Sp == "Po" ~ "Polytrichales",
+                         Sp == "Pti" ~ "Leafy liverwort",
+                         Sp == "Ra" ~ "Large cushion",
+                         Sp == "S" | Sp == "Sli" | Sp == "Sf" ~ "Sphagnum"),
+         Seasons8 = case_when(Month == "Sept20" | Month == "Oct20" | Month == "Sept21" | Month == "Oct21" ~ "Čakča",
+                              Month == "Nov20" | Month == "Dec20" | Month == "Nov21" ~ "Čakčadálvi",
+                              Month == "Jan21" | Month == "Feb21" ~ "Dálvi",
+                              Month == "Mar21" | Month == "Apr21" ~ "Giđđadálvi",
+                              Month == "May21" ~ "Giđđa",
+                              Month == "Jun21" ~ "Giđđageassi",
+                              Month == "Jul21" ~ "Geassi",
+                              Month == "Aug21" ~ "Čakčageassi",
+                              TRUE ~ "YoYo_missing")) %>%
+  mutate(maxY = case_when(Species == "Aulacomnium turgidum" ~ 0.56,
+                          Species == "Dicranum scoparium" ~ 0.56,
+                          Species == "Hylocomium splendens" ~ 0.56,
+                          Species == "Pleurozium schreberi" ~ 0.56,
+                          Species == "Polytrichum commune" ~ 2.2,
+                          Species == "Ptilidium ciliare" ~ 0.56,
+                          Species == "Racomitrium lanuginosum" ~ 2.2,
+                          Species == "Sphagnum fuscum" ~ 2.2,
+                          Species == "Sphagnum majus" ~ 2.2,
+                          Species == "Sphagnum mixture" ~ 2.2)) %>%
+  mutate(across(Month, ~ factor(.x, levels=c("Sept20", "Oct20", "Nov20", "Dec20", "Jan21", "Feb21", "Mar21", "Apr21", "May21", "Jun21", "Jul21", "Aug21", "Sept21", "Oct21", "Nov21")))) %>%
+  mutate(across(Seasons8, ~factor(.x, levels = c("Čakča", "Čakčadálvi", "Dálvi", "Giđđadálvi", "Giđđa", "Giđđageassi", "Geassi", "Čakčageassi"))))
+#
+Thesis_GPP_plot <- GPP_circle_seasons %>%
+  ggplot() +
+  # The seasons:
+  geom_col(aes(x = Month, y = maxY, fill = Seasons8), alpha = 0.5) +
+  scale_fill_manual(values = seasonFill, na.value = NA) +
+  labs(fill = "Sámi Seasons") +
+  ggnewscale::new_scale_fill() +
+  #
+  geom_errorbar(aes(x = Month, y = GPP, ymin = GPP, ymax = GPP+se), position = position_dodge(.9), linewidth = 0.3) +
+  geom_col(aes(x = Month, y = GPP, fill = BFG), color = "black") +
+  facet_wrap( ~ Species, ncol = 5, scales = "free", labeller = labeller(Species = as_labeller(italicize_except_mixture, label_parsed))) + # italicize most, but not the "mixture" in Sphagnum mixture
+  viridis::scale_fill_viridis(discrete = T) +
+  scale_x_discrete(labels = measuringPeriod.circle) +
+  labs(x = element_blank(), y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
+  # Specify y-axes scales so that some species match
+  facetted_pos_scales(
+    y = list(Species == "Aulacomnium turgidum" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Dicranum scoparium" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Hylocomium splendens" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Pleurozium schreberi" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+             Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum mixture" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(0, 2.2)),
+             Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(0, 2.2)))
+  ) +
+  theme_minimal(base_size = 7) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.spacing.x = unit(0.8, "lines"),
+    axis.text = element_text(size = 5),
+    legend.position = "bottom",
+    legend.key.size = unit(3, "mm"), #change legend key size
+    legend.key.height = unit(3, "mm"), #change legend key height
+    legend.key.width = unit(3, "mm"), #change legend key width
+    legend.title = element_text(size = 5),
+    legend.text = element_text(size = 5)
+  ) +
+  #coord_polar(start = 0)
+  coord_radial(start = 0, end = 1.6*pi, inner.radius = 0.1)
+
+# For Word->PDF bmp might be the best format. But only if using the export/publish to PDF
+ggsave("Thesis_GPP_cycle3.6.1200.png", plot = Thesis_GPP_plot, path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white")
+
+#
+#
 # GPP as mg C
 #
 # Recalculate µmol to mg
