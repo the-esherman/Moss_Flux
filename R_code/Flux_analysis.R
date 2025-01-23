@@ -120,6 +120,17 @@ lm_eqn <- function(x, y) {
   as.character(as.expression(eq));
 }
 #
+# Custom labeller function to italicize most, but not the "mixture" in Sphagnum mixture
+italicize_except_mixture <- function(labels) {
+  labels <- as.character(labels)  # Ensure labels are characters
+  
+  # Modify "Sphagnum mixture" to italicize only "Sphagnum"
+  labels <- ifelse(labels == "Sphagnum mixture",
+                   "italic('Sphagnum')~'mixture'",  # Use plotmath expression
+                   paste0("italic('", labels, "')")) # Italicize all others
+  return(labels)
+}
+#
 #
 #
 #=======  ♦   Main data       ♦ =======
@@ -1235,7 +1246,7 @@ NEE_sum %>%
   geom_errorbar(aes(x = Month, y = NEE, ymin = NEE, ymax = NEE+se), position = position_dodge(.9)) +
   geom_col(aes(x = Month, y = NEE, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free", labeller = labeller(Species = as_labeller(italicize_except_mixture, label_parsed))) + # italicize most, but not the "mixture" in Sphagnum mixture
   #coord_cartesian(ylim = c(0,150)) +
   viridis::scale_fill_viridis(discrete = T) +
   labs(x = "Measuring period (Month)", y = expression("NEE (µmol "*m^-2*s^-1*")"), title = "Net Ecosystem Exchange") +  
@@ -1254,6 +1265,8 @@ NEE_sum %>%
   # ) +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
+#ggsave("SupplFig5_NEE_1200dpi.png", path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white") # Save high resolution
+#
 #
 # Respiration
 Resp_sum %>%
@@ -1293,13 +1306,14 @@ Resp_sum %>%
   geom_errorbar(aes(x = Month, y = Resp, ymin = Resp, ymax = Resp+se), position=position_dodge(.9)) +
   geom_col(aes(x = Month, y = Resp, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free", labeller = labeller(Species = as_labeller(italicize_except_mixture, label_parsed))) + # italicize most, but not the "mixture" in Sphagnum mixture  
   coord_cartesian(ylim = c(0,2.1)) +
   viridis::scale_fill_viridis(discrete = T) +
   labs(x = "Measuring period (Month)", y = expression("ER (µmol "*m^-2*s^-1*")"), title = "Ecosystem respiration") +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
-
+#ggsave("Fig5_ER_1200dpi.png", path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white") # Save high resolution
+#
 #
 # GPP
 GPP_sum %>%
@@ -1338,25 +1352,27 @@ GPP_sum %>%
   geom_errorbar(aes(x = Month, y = GPP, ymin = GPP, ymax = GPP+se), position = position_dodge(.9)) +
   geom_col(aes(x = Month, y = GPP, fill = BFG)) +
   scale_x_discrete(labels = measuringPeriod) +
-  facet_wrap( ~ Species, ncol = 3, scales = "free") + 
+  facet_wrap( ~ Species, ncol = 3, scales = "free", labeller = labeller(Species = as_labeller(italicize_except_mixture, label_parsed))) + # italicize most, but not the "mixture" in Sphagnum mixture 
   #coord_cartesian(ylim = c(0,150)) +
   viridis::scale_fill_viridis(discrete = T) +
   labs(x = "Measuring period (Month)", y = expression("GPP (µmol "*m^-2*s^-1*")"), title = "Bryophyte gross primary production") + 
   # Specify y-axes scales so that some species match
-  facetted_pos_scales(
-    y = list(Species == "Aulacomnium turgidum" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
-             Species == "Dicranum scoparium" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
-             Species == "Hylocomium splendens" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
-             Species == "Pleurozium schreberi" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
-             Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(0, 2.2)),
-             Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
-             Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(0, 2.2)),
-             Species == "Sphagnum mixture" ~ scale_y_continuous(limits = c(0, 2.2)),
-             Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(0, 2.2)),
-             Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(0, 2.2)))
-  ) +
+  # facetted_pos_scales(
+  #   y = list(Species == "Aulacomnium turgidum" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+  #            Species == "Dicranum scoparium" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+  #            Species == "Hylocomium splendens" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+  #            Species == "Pleurozium schreberi" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+  #            Species == "Polytrichum commune" ~ scale_y_continuous(limits = c(0, 2.2)),
+  #            Species == "Ptilidium ciliare" ~ scale_y_continuous(limits = c(0, 0.56), breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5)),
+  #            Species == "Racomitrium lanuginosum" ~ scale_y_continuous(limits = c(0, 2.2)),
+  #            Species == "Sphagnum mixture" ~ scale_y_continuous(limits = c(0, 2.2)),
+  #            Species == "Sphagnum fuscum" ~ scale_y_continuous(limits = c(0, 2.2)),
+  #            Species == "Sphagnum majus" ~ scale_y_continuous(limits = c(0, 2.2)))
+  # ) +
   theme_classic(base_size = 20) +
   theme(panel.spacing = unit(2, "lines"), axis.text.x=element_text(angle = 60, hjust = 1), legend.position = "right")
+#ggsave("Fig3_GPP_1200dpi.png", path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white") # Save high resolution
+#
 #
 #
 # Circular plot
@@ -1390,17 +1406,6 @@ measuringPeriod.circle <- c("2020\nSep",	"Oct",	"Nov", "Dec", "2021\nJan",	"Feb"
 # Colors for the 8 seasons
 seasonFill <- c("#f57d15", "#280b53", "#000004", "#65156e", "#9f2a63", "#fac228", "#fcffa4", "#d44842")
 #
-#
-# Custom labeller function to italicize most, but not the "mixture" in Sphagnum mixture
-italicize_except_mixture <- function(labels) {
-  labels <- as.character(labels)  # Ensure labels are characters
-  
-  # Modify "Sphagnum mixture" to italicize only "Sphagnum"
-  labels <- ifelse(labels == "Sphagnum mixture",
-                   "italic('Sphagnum')~'mixture'",  # Use plotmath expression
-                   paste0("italic('", labels, "')")) # Italicize all others
-  return(labels)
-}
 #
 #
 # Plot
