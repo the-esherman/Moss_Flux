@@ -1077,14 +1077,14 @@ soilM_plot <- Environ.plot %>%
   geom_line(aes(x = Date, y = SoilM_Mwet, lty = "Wet Mire")) +
   #scale_y_continuous(breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90), minor_breaks = c(-5, 5, 15, 25, 35, 45, 55, 65, 75, 85)) +
   scale_y_continuous(breaks = c(0, 20, 40, 60, 80), minor_breaks = c( 10, 20, 30, 50, 70, 90)) +
-  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day", date_labels = "%d-%b") +
   coord_cartesian(xlim = measureDays) +
-  labs(x = NULL, y = "VWC \n(%)") +
+  labs(x = "Time of year", y = "VWC \n(%)") +
   theme_bw(base_size = 25) +
-  theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
+  theme(legend.position = "top", axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
 soilM_legend <- get_plot_component(soilM_plot, "guide-box", return_all = TRUE)[[4]]  # 1 is right, 2 is left, 3 is bottom, 4 is top
-soilM_plot.2 <- soilM_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+soilM_plot.2 <- soilM_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_text(size = 15), axis.title.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #soilM_plot <- soilM_plot + guides(lty = NULL)
 #
 # PAR 
@@ -1099,7 +1099,7 @@ PAR_plot <- Environ.plot %>%
   theme_bw(base_size = 25) +
   theme(legend.position = "bottom", axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15))
 #
-PAR_plot.2 <- PAR_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_text(size = 15), axis.title.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+PAR_plot.2 <- PAR_plot + theme_bw(base_size = 25) + theme(legend.position = "none", axis.text.x = element_blank(), axis.title.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #
 # Plot graph
 # Align main graphs
@@ -1147,6 +1147,70 @@ ARA_period_plot <- Environ.plot %>%
 # Make all plots align, then add legend
 env_plot.ARA <- plot_grid(airT_plot, soilT_plot.2, soilM_plot.2, PAR_plot.2, ARA_period_plot, align = "v", ncol = 1, rel_heights = c(3,3,2.5,3.5,1.5))
 plot_grid(env_plot.ARA, soilT_legend, ncol = 1, rel_heights = c(9, 1))
+
+
+
+# Add measuring period to each 
+#
+airT_plot_ARA <- airT_plot +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 1][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 2][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 3][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 4][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 5][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 6][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 7][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 8][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 9][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 10][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 11][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+soilT_plot.2_ARA <- soilT_plot.2 +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 1][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 2][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 3][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 4][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 5][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 6][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 7][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 8][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 9][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 10][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 11][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+soilM_plot.2_ARA <- soilM_plot.2 +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 1][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 2][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 3][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 4][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 5][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 6][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 7][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 8][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 9][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 10][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 11][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+PAR_plot.2_ARA <- PAR_plot.2 +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 1][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 2][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 3][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 4][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 5][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 6][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 7][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 8][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 9][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 10][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(ARA_period$Date[ARA_period$Round == 11][1]), xmax = as.Date(ARA_period$Date[ARA_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+# Make all plots align, then add legend
+env_plot_ARA <- plot_grid(PAR_plot.2_ARA,airT_plot_ARA, soilT_plot.2_ARA, soilM_plot.2_ARA, align = "v", ncol = 1, rel_heights = c(3,3,3,3.5))
+plot_grid(env_plot_ARA, soilT_legend, ncol = 1, rel_heights = c(9, 1))
+
+
+
+
 #
 #
 # For CO2-flux
