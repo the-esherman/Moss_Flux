@@ -1050,6 +1050,70 @@ plot_grid(env_plot.flux, soilT_legend, ncol = 1, rel_heights = c(9, 1))
 
 
 
+# Add measuring period to each CO2-flux period
+#
+airT_plot_flux <- airT_plot +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 1][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 2][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 3][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 4][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 5][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 6][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 7][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 8][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 9][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 10][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 11][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+soilT_plot.2_flux <- soilT_plot.2 +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 1][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 2][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 3][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 4][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 5][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 6][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 7][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 8][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 9][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 10][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 11][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+soilM_plot.2_flux <- soilM_plot.2 +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 1][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 2][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 3][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 4][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 5][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 6][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 7][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 8][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 9][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 10][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 11][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+PAR_plot.2_flux <- PAR_plot.2 +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 1][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 1][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 2][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 2][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 3][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 3][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 4][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 4][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 5][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 5][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 6][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 6][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 7][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 7][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 8][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 8][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 9][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 9][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 10][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 10][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3) +
+  annotate("rect", xmin = as.Date(Flux_period$Date[Flux_period$Round == 11][1]), xmax = as.Date(Flux_period$Date[Flux_period$Round == 11][2]), ymin = -Inf, ymax = Inf, fill = "black", alpha = 0.3)
+#
+# Make all plots align, then add legend
+env_plot_flux <- plot_grid(PAR_plot.2_flux,airT_plot_flux, soilT_plot.2_flux, soilM_plot.2_flux, align = "v", ncol = 1, rel_heights = c(3,3,3,3.5))
+plot_grid(env_plot_flux, soilT_legend, ncol = 1, rel_heights = c(9, 1))
+
+
+
+
+
+
+
 #
 #
 # <><><><><> END - FIG X <><><><><>
@@ -1361,7 +1425,7 @@ Thesis_GPP_plot <- GPP_circle_seasons %>%
   coord_radial(start = 0, end = 1.6*pi, inner.radius = 0.1)
 
 # For Word->PDF bmp might be the best format. But only if using the export/publish to PDF
-ggsave("Thesis_GPP_cycle3.6.1200.png", plot = Thesis_GPP_plot, path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white")
+#ggsave("Thesis_GPP_cycle3.6.1200.png", plot = Thesis_GPP_plot, path = "images", width = 20, height = 10, units = "cm", dpi = 1200, bg = "white")
 
 #
 #
