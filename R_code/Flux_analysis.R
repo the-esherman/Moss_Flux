@@ -57,6 +57,10 @@ PAR_flux <- read_csv("Data_clean/PAR_flux.csv", col_names = TRUE)
 EM50_Heath <- read_csv("Data_clean/Heath_EM50.csv", col_names = TRUE)
 EM50_Mire <- read_csv("Data_clean/Wetland_EM50.csv", col_names = TRUE)
 #
+# SMHI weather station data
+SMHI_Abisko_airT <- read_csv2("Data_raw/SMHI/smhi_Temp_Abisko_new.csv", skip = 10)
+#
+#
 # MP, or Round in months
 measuringPeriod <- c("Sept",	"Oct",	"Nov",	"Feb",	"Mar",	"May",	"Jun",	"Jul",	"Sept",	"Oct",	"Nov")
 #
@@ -411,7 +415,40 @@ Flux_data_export <- Flux_data.3 %>%
   select(!MP)
 # write_csv(Flux_data_export, "export/Q1_Flux.csv", na = "NA")
 # Flux_data.3 <- read_csv("export/Q1_Flux.csv", col_names = T)
-
+#
+#
+# SMHI air temperature data
+SMHI_Abisko_airT <- SMHI_Abisko_airT %>%
+  dplyr::select(1:3) %>%
+  mutate(across(Datum, ymd), # If also for time: across("Tid (UTC)", hms))
+         across(Lufttemperatur, as.numeric)) %>% 
+  dplyr::filter(year(Datum) == 2020 | year(Datum) == 2021) %>%
+  dplyr::filter(!(year(Datum) == 2021 & month(Datum) > 10),
+                !(year(Datum) == 2020 & month(Datum) < 8)) %>%
+  rename("Time" = `Tid (UTC)`,
+         "Date" = Datum)
+#
+# Compare Station air temperature with field measured air temperature
+AirT_compare <- Environ %>%
+  select(Date, Time, AirT, AirT_h) %>%
+  left_join(SMHI_Abisko_airT, by = join_by(Date, Time)) %>%
+  mutate(Diff = Lufttemperatur - AirT,
+         DiffH = Lufttemperatur - AirT_h,
+         Date_time = ymd(Date) + hms(Time))
+#
+# Plot air temperature from ANS weather station against logger measurements for hourly measurements during measurements
+ggplot(AirT_compare) +
+  geom_point(aes(x = Date_time, y = Lufttemperatur, shape = "ANS"), color = "#0072B2") +
+  geom_point(aes(x = Date_time, y = AirT, shape = "Logger"), color = "#E69F00") +
+  #scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
+  coord_cartesian(xlim = c(ymd_hms("2020-09-10 18:00:00"), ymd_hms("2021-11-20 19:00:00"))) +
+  labs(x = "Date", y = "Air temp. \n(°C)") +
+  # theme_bw(base_size = 25) +
+  # theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  theme_bw(base_size = 25) + theme(legend.position = "right", axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
+#
+# Save?
+# write_csv(SMHI_Abisko_airT, "export/SMHI_Abisko_airT.csv", na = "NA")
 #
 #
 #
@@ -738,6 +775,7 @@ GPP_sum_Season8 %>%
 # Environmental data and flux air temperature and PAR. Restricted to time of interest
 Environ.plot <- Environ %>%
   left_join(Environ_flux, by = join_by(Date, Time)) %>%
+  left_join(SMHI_Abisko_airT, by = join_by(Date, Time)) %>%
   select(!c(Early.x, Late.x, Early.y, Late.y)) %>%
   summarise(SoilT = mean(Soil_temperature, na.rm = T), # Not sure if averaging by day is the best way about this
             SoilM = mean(Soil_moisture, na.rm = T),
@@ -751,6 +789,7 @@ Environ.plot <- Environ %>%
             PAR_M = mean(PAR_M, na.rm = T),
             AirT_flux = mean(AirT_flux, na.rm = T),
             PAR_flux = mean(PAR_flux, na.rm = T),
+            Lufttemperatur = mean(Lufttemperatur, na.rm = T),
             .by = Date) %>%
   # unite(Date, Time, col = "Date_time", sep = "T") %>%
   # mutate(Date_time = ymd_hms(Date_time)) %>%
@@ -812,7 +851,22 @@ x <- Environ %>%
   filter(Date >= ymd("2020-09-01") & Date <= ymd("2021-11-30")) %>%
   filter(Soil_moisture_Mwet < 10) %>%
   distinct(Date, .keep_all = T)
+#
 
+#
+# Plot logger against ANS for diel measurements
+Environ.plot %>%
+  ggplot() +
+  #geom_line(aes(x = Date, y = AirT_h, lty = "Heath"), color = "green") +
+  geom_line(aes(x = Date, y = AirT, lty = "Logger"), color = "#E69F00") +
+  geom_line(aes(x = Date, y = Lufttemperatur, lty = "ANS"), color = "#0072B2") +
+  scale_y_continuous(breaks = c(-20, -10, 0, 10, 20), minor_breaks = c(-25, -15, -5, 5, 15, 25)) +
+  scale_x_date(date_breaks = "30 day", date_minor_breaks = "5 day") +
+  coord_cartesian(xlim = measureDays) +
+  labs(x = NULL, y = "Air temp. \n(°C)") +
+  # theme_bw(base_size = 25) +
+  # theme(legend.position = "top", axis.text.x = element_blank(), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) +
+  theme_bw(base_size = 25) + theme(legend.position = "right", axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15), axis.title.y = element_text(size = 15)) 
 #
 #
 # <><><><><> MAIN ENVIRONMENTAL PLOT - FIG X <><><><><>
