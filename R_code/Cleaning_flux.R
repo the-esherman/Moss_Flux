@@ -73,11 +73,24 @@ fluxRaw_all <- do.call(rbind, fluxRaw_list)
 
 x <- read_delim("Data_raw/Flux/Flux raw/20201001 afternoon.dat", skip = 2, col_names = TRUE, col_types = "cccccccccccccccccccc")
 
+
+fluxNames <- read_xlsx("Data_raw/Flux/Flux ID names.xlsx", col_names = TRUE)
+
 #
 #
 #
 #=======  ♠   Clean    ♠ =======
 #
+# Names or ID's to merge with values
+fluxNames <- fluxNames %>%
+  # Set Round and Plot as characters
+  mutate(across(c(Round, Plot), ~as.character(.x))) %>%
+  # Add a 0 in front of numbers below 10
+  mutate(Plot = str_replace(Plot, "\\b([1-9])\\b", "0\\1"),
+         Round = str_replace(Round, "\\b([1-9])\\b", "0\\1")) %>%
+  select(!Comment)
+
+
 # Correct NaN in round 1
 # Best approximation of values
 flux_all.1 <- flux_all %>%
@@ -123,6 +136,34 @@ flux_all.1 <- flux_all %>%
          ATMP = if_else(id == "Round 01" & Plot == 72 & RecNo == 12 & ATMP == "NaN", 983, ATMP),
          Probe_Type = if_else(id == "Round 01" & Plot == 72 & RecNo == 12 & Probe_Type == "NaN", 8, Probe_Type))
 #
+fluxRaw_all.1 <- fluxRaw_all2 %>%
+  rename("Plot" = ";Plot",
+         "CO2_Ref" = `CO2 Ref`, # DC, concentration in ppm
+         "mb_Ref" = `mb Ref`, # RH, relative humidity sensor, if attached
+         "mbR_Temp" = `mbR Temp`, # Temperature of RH sensor
+         "InputA" = `Input A`, # PAR from PAR sensor
+         "InputB" = `Input B`, # RH, from chamber
+         "InputC" = `Input C`, # Temperature of soil
+         "InputD" = `Input D`, # DC, change in concentration in ppm
+         "InputE" = `Input E`, # DT, change in time in sec
+         "InputF" = `Input F`, # SR rate, g (CO2) m^2 Hour^-1
+         "InputG" = `Input G`, # Not used
+         "InputH" = `Input H`, # +/- SR rate, 00 if respiration (CO2 increase), 01 if CO2 decrease
+         "Probe_Type" = `Probe Type`) %>%
+  filter(file != "20210601_1", # The 2nd file—"20210601_2"—has all values of the 1st
+         file != "20210602_2") %>% # The 3rd file—"20210602_3"—has all values of the 2nd
+  left_join(fluxNames, by = join_by(file, Plot)) %>%
+  #
+  # Remove duplicates
+  # This should be specified in R, not in the data file!
+  filter(Keep != "Kill" | is.na(Keep))
+
+
+
+
+flux_LightResponse <- fluxRaw_all.1 %>%
+  filter(LightResponse == "LR")
+
 
 
 
